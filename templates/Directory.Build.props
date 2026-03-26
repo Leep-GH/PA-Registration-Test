@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn> <!-- Remove this line to enforce XML docs as errors -->
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Deterministic builds for reproducibility -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Code analysis -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Global usings shared across all projects -->
+    <Using Include="System.Diagnostics" />
+    <Using Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+</Project>

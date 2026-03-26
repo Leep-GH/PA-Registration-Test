@@ -1,0 +1,1140 @@
+openapi: 3.1.0
+
+info:
+  title: PDP Registry Tracker API
+  version: 1.0.0
+  description: >
+    Public REST API for the PDP Registry Tracker — a service that monitors the DGFiP (Direction
+    Générale des Finances Publiques) official list of certified French e-invoicing platforms
+    (Plateformes de Dématérialisation Partenaires). The API provides read-only access to the current
+    PDP registry, change history, and scraper health. An admin-only endpoint allows manual scrape
+    triggering via a Bearer token. All API responses use plain JSON with standard HTTP conventions.
+  contact:
+    name: PDP Registry Tracker
+    url: https://pdp-tracker.example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  - url: https://pdp-tracker.example.com
+    description: Production
+
+tags:
+  - name: pdps
+    description: Current PDP registry — list and detail endpoints
+  - name: changes
+    description: Change event history — additions, removals, and status changes
+  - name: status
+    description: Scraper health and operational status
+  - name: admin
+    description: Admin-only operations protected by Bearer token
+  - name: subscribers
+    description: Newsletter subscription management (double opt-in, one-click unsubscribe)
+
+paths:
+
+  # ---------------------------------------------------------------------------
+  # PDPs
+  # ---------------------------------------------------------------------------
+
+  /api/v1/pdps:
+    get:
+      tags: [pdps]
+      summary: List all PDPs
+      operationId: listPdps
+      description: >
+        Returns the full current list of PDPs scraped from the DGFiP registry. By default all
+        records are returned regardless of status. Use the `status` query parameter to filter.
+        Also accepts `Accept: text/csv` to receive a CSV export of the same dataset.
+      parameters:
+        - $ref: '#/components/parameters/StatusFilter'
+      responses:
+        '200':
+          description: Successful response — list of PDPs
+          headers:
+            Cache-Control:
+              description: Responses are cached for 5 minutes
+              schema:
+                type: string
+                example: public, max-age=300
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdpListResponse'
+              examples:
+                default:
+                  $ref: '#/components/examples/PdpListResponseExample'
+            text/csv:
+              schema:
+                type: string
+                description: >
+                  RFC 4180 CSV export. Columns: name, slug, status, registration_number,
+                  registration_date, website_url, first_seen_at, last_seen_at.
+                  Content-Disposition header is set to attachment.
+              example: |
+                name,slug,status,registration_number,registration_date,website_url,first_seen_at,last_seen_at
+                Sovos Compliance SAS,sovos-compliance-sas,registered,PDP-2024-001,2024-06-15,https://sovos.com,2024-06-16T07:00:00Z,2026-03-26T07:00:00Z
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/pdps/{slug}:
+    get:
+      tags: [pdps]
+      summary: Get a single PDP with full status history
+      operationId: getPdpBySlug
+      description: >
+        Returns the detail record for a single PDP identified by its URL-safe slug, including the
+        complete ordered list of change events for that PDP (newest first).
+      parameters:
+        - $ref: '#/components/parameters/PdpSlug'
+      responses:
+        '200':
+          description: PDP found
+          headers:
+            Cache-Control:
+              description: Responses are cached for 5 minutes
+              schema:
+                type: string
+                example: public, max-age=300
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdpDetailResponse'
+              examples:
+                default:
+                  $ref: '#/components/examples/PdpDetailResponseExample'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ---------------------------------------------------------------------------
+  # Changes
+  # ---------------------------------------------------------------------------
+
+  /api/v1/changes:
+    get:
+      tags: [changes]
+      summary: List change events
+      operationId: listChanges
+      description: >
+        Returns paginated change events recorded across all scrape runs. Supports filtering by date,
+        event type, and offset-based pagination.
+      parameters:
+        - $ref: '#/components/parameters/SinceDate'
+        - $ref: '#/components/parameters/EventTypeFilter'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Successful response — list of change events
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: public, max-age=300
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeListResponse'
+              examples:
+                default:
+                  $ref: '#/components/examples/ChangeListResponseExample'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/changes/latest:
+    get:
+      tags: [changes]
+      summary: Get changes from the most recent scrape run
+      operationId: getLatestChanges
+      description: >
+        Returns all change events detected during the most recent successful scrape run only. If
+        the last run produced no changes the `changes` array will be empty. No pagination parameters
+        are supported on this endpoint.
+      responses:
+        '200':
+          description: Changes from the most recent successful scrape run
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: public, max-age=300
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LatestChangesResponse'
+              examples:
+                withChanges:
+                  summary: Run that detected changes
+                  $ref: '#/components/examples/LatestChangesWithChangesExample'
+                noChanges:
+                  summary: Run with no changes
+                  $ref: '#/components/examples/LatestChangesEmptyExample'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ---------------------------------------------------------------------------
+  # Status
+  # ---------------------------------------------------------------------------
+
+  /api/v1/status:
+    get:
+      tags: [status]
+      summary: Scraper health status
+      operationId: getStatus
+      description: >
+        Returns operational health of the scraper: last run details, next scheduled run, total PDP
+        count, and a dead-man's-switch flag. This endpoint also triggers the dead-man's-switch check
+        on each call — if the last successful run was more than 48 hours ago, `uptime_ok` is `false`
+        and an admin alert is dispatched.
+      responses:
+        '200':
+          description: Scraper status
+          headers:
+            Cache-Control:
+              description: Status is never cached
+              schema:
+                type: string
+                example: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+              examples:
+                healthy:
+                  $ref: '#/components/examples/StatusHealthyExample'
+                unhealthy:
+                  $ref: '#/components/examples/StatusUnhealthyExample'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ---------------------------------------------------------------------------
+  # Admin
+  # ---------------------------------------------------------------------------
+
+  /api/admin/trigger-scrape:
+    post:
+      tags: [admin]
+      summary: Trigger an immediate scrape run
+      operationId: triggerScrape
+      description: >
+        Triggers a full scrape run immediately, outside the normal daily schedule. Protected by a
+        static Bearer token (`ADMIN_SCRAPE_TOKEN`). Returns `409 Conflict` if a scrape is already
+        in progress. Used by the GitHub Actions cron workflow and for manual invocation.
+      security:
+        - AdminBearerToken: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerScrapeRequest'
+            example: {}
+      responses:
+        '202':
+          description: Scrape accepted and triggered
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerScrapeResponse'
+              examples:
+                accepted:
+                  $ref: '#/components/examples/TriggerScrapeAcceptedExample'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ---------------------------------------------------------------------------
+  # Subscribers
+  # ---------------------------------------------------------------------------
+
+  /api/subscribe:
+    post:
+      tags: [subscribers]
+      summary: Subscribe to change notifications
+      operationId: subscribe
+      description: >
+        Initiates a double opt-in newsletter subscription. A confirmation email is dispatched to the
+        provided address containing a unique token link. The subscription is not active until the user
+        clicks the confirmation link. Unconfirmed subscriptions are purged after 48 hours.
+        To prevent email enumeration, a 409 is only returned for already-confirmed email addresses;
+        duplicate pending subscriptions receive a 201 with the same message.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscribeRequest'
+            examples:
+              default:
+                $ref: '#/components/examples/SubscribeRequestExample'
+      responses:
+        '201':
+          description: Confirmation email dispatched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                default:
+                  value:
+                    message: Confirmation email sent. Please check your inbox.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/confirm:
+    get:
+      tags: [subscribers]
+      summary: Confirm email subscription
+      operationId: confirmSubscription
+      description: >
+        Activates a subscription using the one-time token delivered in the confirmation email.
+        Tokens are single-use and expire after 48 hours. Returns a neutral message for invalid or
+        expired tokens to prevent enumeration.
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionToken'
+      responses:
+        '200':
+          description: Subscription confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                default:
+                  value:
+                    message: Subscription confirmed.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/unsubscribe:
+    get:
+      tags: [subscribers]
+      summary: Unsubscribe via one-click token
+      operationId: unsubscribe
+      description: >
+        Unsubscribes a recipient using the token embedded in notification emails. No authentication
+        is required. The subscription record is soft-deleted (unsubscribe timestamp recorded).
+        This endpoint is safe to follow from email clients and link scanners — it returns 200 for
+        unknown tokens to prevent enumeration.
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionToken'
+      responses:
+        '200':
+          description: Unsubscribed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                default:
+                  value:
+                    message: You have been unsubscribed.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ---------------------------------------------------------------------------
+  # RSS (informational — not a JSON REST endpoint)
+  # ---------------------------------------------------------------------------
+
+  /rss.xml:
+    get:
+      tags: [changes]
+      summary: RSS 2.0 feed of recent change events
+      operationId: getRssFeed
+      description: >
+        Returns an RSS 2.0 XML feed containing the most recent 50 change events. Each `<item>`
+        includes the PDP name, event type, detected timestamp, and a link to the PDP detail page.
+        This is not a JSON endpoint — it is served as `application/rss+xml`.
+      responses:
+        '200':
+          description: RSS 2.0 XML feed
+          content:
+            application/rss+xml:
+              schema:
+                type: string
+                description: Valid RSS 2.0 XML document
+              example: |
+                <?xml version="1.0" encoding="UTF-8"?>
+                <rss version="2.0">
+                  <channel>
+                    <title>PDP Registry Tracker — Change Feed</title>
+                    <link>https://pdp-tracker.example.com</link>
+                    <description>Latest changes to the DGFiP PDP registry</description>
+                    <lastBuildDate>Thu, 26 Mar 2026 07:02:00 +0000</lastBuildDate>
+                    <item>
+                      <title>Sovos Compliance SAS — status_changed</title>
+                      <link>https://pdp-tracker.example.com/pdp/sovos-compliance-sas</link>
+                      <pubDate>Thu, 26 Mar 2026 07:00:00 +0000</pubDate>
+                      <description>Status changed from candidate to registered</description>
+                      <guid>https://pdp-tracker.example.com/pdp/sovos-compliance-sas#change-42</guid>
+                    </item>
+                  </channel>
+                </rss>
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+# =============================================================================
+# COMPONENTS
+# =============================================================================
+
+components:
+
+  # ---------------------------------------------------------------------------
+  # Security schemes
+  # ---------------------------------------------------------------------------
+
+  securitySchemes:
+    AdminBearerToken:
+      type: http
+      scheme: bearer
+      description: >
+        Static Bearer token for admin endpoints. Set via the `ADMIN_SCRAPE_TOKEN` environment
+        variable. Token comparison uses `crypto.timingSafeEqual` to prevent timing attacks.
+        Include as: `Authorization: Bearer <ADMIN_SCRAPE_TOKEN>`.
+
+  # ---------------------------------------------------------------------------
+  # Reusable parameters
+  # ---------------------------------------------------------------------------
+
+  parameters:
+
+    PdpSlug:
+      name: slug
+      in: path
+      required: true
+      description: >
+        URL-safe kebab-case identifier for the PDP. Derived from the platform name at first
+        insertion and never changed thereafter, even if the platform is renamed.
+      schema:
+        type: string
+        pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+        minLength: 1
+        maxLength: 200
+        example: sovos-compliance-sas
+
+    StatusFilter:
+      name: status
+      in: query
+      required: false
+      description: >
+        Filter PDPs by status. `all` (default) returns every record regardless of status,
+        including removed PDPs.
+      schema:
+        type: string
+        enum: [registered, candidate, removed, all]
+        default: all
+        example: registered
+
+    SinceDate:
+      name: since
+      in: query
+      required: false
+      description: >
+        Return only change events detected on or after this date. Must be a valid ISO 8601 date
+        string (`YYYY-MM-DD`). Time component is not supported — the filter applies to the full
+        calendar day in UTC.
+      schema:
+        type: string
+        format: date
+        example: '2026-01-01'
+
+    EventTypeFilter:
+      name: type
+      in: query
+      required: false
+      description: Filter change events by event type. Omit to return all event types.
+      schema:
+        type: string
+        enum: [added, removed, status_changed]
+        example: status_changed
+
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Maximum number of change events to return. Clamped at 200.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+        example: 50
+
+    Offset:
+      name: offset
+      in: query
+      required: false
+      description: Zero-based index of the first result to return. Used for pagination.
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+        example: 0
+
+    SubscriptionToken:
+      name: token
+      in: query
+      required: true
+      description: >
+        64-character hex token generated at subscription time using `crypto.randomBytes(32)`.
+        Delivered to the subscriber by email and used for confirmation and unsubscribe operations.
+      schema:
+        type: string
+        pattern: '^[0-9a-f]{64}$'
+        minLength: 64
+        maxLength: 64
+        example: a3f1c9e2b4d7f0e6a1c8b5d2e9f3c6a4b7d0e3f6a9c2b5d8e1f4a7c0b3d6e9f2
+
+  # ---------------------------------------------------------------------------
+  # Schemas
+  # ---------------------------------------------------------------------------
+
+  schemas:
+
+    # --- Core domain types ---
+
+    Pdp:
+      type: object
+      required:
+        - name
+        - slug
+        - status
+        - first_seen_at
+        - last_seen_at
+        - is_active
+      properties:
+        name:
+          type: string
+          description: Display name exactly as published by the DGFiP registry.
+          example: Sovos Compliance SAS
+        slug:
+          type: string
+          description: >
+            URL-safe kebab-case identifier. Stable across renames — derived once on first insertion.
+          pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+          example: sovos-compliance-sas
+        status:
+          $ref: '#/components/schemas/PdpStatus'
+        registration_number:
+          type: ['string', 'null']
+          description: Official registration number issued by the DGFiP. Null if not yet published.
+          example: PDP-2024-001
+        registration_date:
+          type: ['string', 'null']
+          format: date
+          description: Date the platform was officially registered. ISO 8601 date string. Null if not yet published.
+          example: '2024-06-15'
+        first_seen_at:
+          type: string
+          format: date-time
+          description: UTC timestamp when this PDP was first observed on the DGFiP registry.
+          example: '2024-06-16T07:00:00Z'
+        last_seen_at:
+          type: string
+          format: date-time
+          description: UTC timestamp of the most recent scrape run in which this PDP appeared.
+          example: '2026-03-26T07:00:00Z'
+        website_url:
+          type: ['string', 'null']
+          format: uri
+          description: The platform's public website URL. Null if not published on the registry.
+          example: https://sovos.com
+        is_active:
+          type: boolean
+          description: >
+            `true` if the PDP is currently on the registry; `false` if it has been removed
+            (soft-deleted). Removed PDPs are retained for historical reference.
+          example: true
+
+    PdpWithHistory:
+      allOf:
+        - $ref: '#/components/schemas/Pdp'
+        - type: object
+          required:
+            - status_history
+          properties:
+            status_history:
+              type: array
+              description: >
+                Complete ordered list of change events for this PDP, newest first.
+                Empty array if the PDP has never changed since first observation.
+              items:
+                $ref: '#/components/schemas/ChangeEvent'
+
+    PdpStatus:
+      type: string
+      enum: [registered, candidate, removed]
+      description: >
+        Current registration status of the PDP as published by DGFiP.
+        - `registered` — fully certified and listed
+        - `candidate` — under evaluation
+        - `removed` — was previously listed but has since been removed
+      example: registered
+
+    ChangeEvent:
+      type: object
+      required:
+        - id
+        - pdp_id
+        - event_type
+        - detected_at
+      properties:
+        id:
+          type: integer
+          description: Auto-incremented surrogate key for the change event.
+          example: 42
+        pdp_id:
+          type: integer
+          description: Foreign key referencing the `pdps` table.
+          example: 5
+        pdp_name:
+          type: string
+          description: Display name of the PDP at the time of the event. Included in list responses.
+          example: Sovos Compliance SAS
+        pdp_slug:
+          type: string
+          description: Stable slug of the PDP. Included in list responses.
+          example: sovos-compliance-sas
+        event_type:
+          $ref: '#/components/schemas/EventType'
+        old_value:
+          description: >
+            JSON snapshot of the previous state. `null` for `added` events where no prior
+            state exists.
+          oneOf:
+            - type: 'null'
+            - type: object
+              additionalProperties: true
+          example:
+            status: candidate
+        new_value:
+          description: >
+            JSON snapshot of the new state. `null` for `removed` events where the platform
+            has been taken off the registry.
+          oneOf:
+            - type: 'null'
+            - type: object
+              additionalProperties: true
+          example:
+            status: registered
+        detected_at:
+          type: string
+          format: date-time
+          description: UTC timestamp of the scrape run that detected this change.
+          example: '2026-03-26T07:00:00Z'
+
+    EventType:
+      type: string
+      enum: [added, removed, status_changed]
+      description: >
+        - `added` — PDP appeared on the registry for the first time
+        - `removed` — PDP disappeared from the registry
+        - `status_changed` — PDP status (or other attribute) changed
+      example: status_changed
+
+    ScrapeRunStatus:
+      type: string
+      enum: [success, failed, no_change]
+      description: >
+        Outcome of a scrape run:
+        - `success` — PDPs were fetched, diffed, and any changes persisted
+        - `failed` — fetch or parse step did not complete
+        - `no_change` — fetch and parse succeeded but no differences were detected
+      example: success
+
+    # --- Response bodies ---
+
+    PdpListResponse:
+      type: object
+      required:
+        - as_of
+        - source
+        - count
+        - pdps
+      properties:
+        as_of:
+          type: string
+          format: date-time
+          description: UTC timestamp of the most recent successful scrape run.
+          example: '2026-03-26T07:02:00Z'
+        source:
+          type: string
+          format: uri
+          description: URL of the DGFiP registry page that was scraped.
+          example: https://www.impots.gouv.fr/plateformes-de-dematerialisation-partenaires
+        count:
+          type: integer
+          description: Total number of PDPs in the response array (after any status filter).
+          minimum: 0
+          example: 42
+        pdps:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pdp'
+
+    PdpDetailResponse:
+      type: object
+      required:
+        - pdp
+      properties:
+        pdp:
+          $ref: '#/components/schemas/PdpWithHistory'
+
+    ChangeListResponse:
+      type: object
+      required:
+        - total
+        - limit
+        - offset
+        - changes
+      properties:
+        total:
+          type: integer
+          description: Total number of change events matching the applied filters (before pagination).
+          minimum: 0
+          example: 123
+        limit:
+          type: integer
+          description: The effective `limit` value applied to this response.
+          minimum: 1
+          maximum: 200
+          example: 50
+        offset:
+          type: integer
+          description: The effective `offset` value applied to this response.
+          minimum: 0
+          example: 0
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangeEvent'
+
+    LatestChangesResponse:
+      type: object
+      required:
+        - total
+        - limit
+        - offset
+        - changes
+      properties:
+        total:
+          type: integer
+          description: Number of change events from the most recent successful scrape run.
+          minimum: 0
+          example: 2
+        limit:
+          type: integer
+          description: Always equal to `total` for this endpoint — no pagination applied.
+          minimum: 0
+          example: 2
+        offset:
+          type: integer
+          description: Always `0` for this endpoint.
+          enum: [0]
+          example: 0
+        changes:
+          type: array
+          description: Change events from the most recent successful scrape run. Empty if no changes.
+          items:
+            $ref: '#/components/schemas/ChangeEvent'
+
+    StatusResponse:
+      type: object
+      required:
+        - last_run_at
+        - last_run_status
+        - last_successful_run_at
+        - pdps_count
+        - changes_last_run
+        - next_scheduled_run
+        - uptime_ok
+      properties:
+        last_run_at:
+          type: ['string', 'null']
+          format: date-time
+          description: UTC timestamp when the most recent scrape run started. Null if no run has ever completed.
+          example: '2026-03-26T07:02:00Z'
+        last_run_status:
+          allOf:
+            - $ref: '#/components/schemas/ScrapeRunStatus'
+          nullable: true
+          description: Outcome of the most recent scrape run. Null if no run has ever completed.
+        last_successful_run_at:
+          type: ['string', 'null']
+          format: date-time
+          description: UTC timestamp of the most recent run that completed with status `success` or `no_change`.
+          example: '2026-03-26T07:02:00Z'
+        pdps_count:
+          type: integer
+          description: Total number of active PDPs currently in the database.
+          minimum: 0
+          example: 42
+        changes_last_run:
+          type: integer
+          description: Number of change events detected during the last scrape run.
+          minimum: 0
+          example: 2
+        next_scheduled_run:
+          type: ['string', 'null']
+          format: date-time
+          description: UTC timestamp of the next scheduled GitHub Actions cron run (05:00 UTC).
+          example: '2026-03-27T05:00:00Z'
+        uptime_ok:
+          type: boolean
+          description: >
+            `true` if a successful run occurred within the last 48 hours.
+            `false` triggers the dead-man's switch — an admin alert is dispatched.
+          example: true
+
+    TriggerScrapeRequest:
+      type: object
+      description: Empty body — no parameters required. Send `{}` or omit the body entirely.
+      additionalProperties: false
+
+    TriggerScrapeResponse:
+      type: object
+      required:
+        - message
+        - run_id
+      properties:
+        message:
+          type: string
+          description: Human-readable confirmation that the scrape has been triggered.
+          example: Scrape triggered
+        run_id:
+          type: integer
+          description: The auto-incremented ID of the newly created `scrape_runs` record.
+          example: 42
+
+    SubscribeRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: >
+            Email address to subscribe. Must be a valid RFC 5322 address. PII — never logged
+            or returned in any API response.
+          maxLength: 254
+          example: user@example.com
+
+    MessageResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable outcome message.
+          example: Confirmation email sent. Please check your inbox.
+
+    # --- Error ---
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - code
+      properties:
+        error:
+          type: string
+          description: Human-readable description of the error.
+          example: The requested PDP slug was not found.
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+
+    ErrorCode:
+      type: string
+      enum:
+        - INVALID_INPUT
+        - NOT_FOUND
+        - ALREADY_EXISTS
+        - UNAUTHORIZED
+        - CONFLICT
+        - INTERNAL_ERROR
+      description: >
+        Machine-readable error code:
+        - `INVALID_INPUT` — request failed validation (malformed body, invalid query param)
+        - `NOT_FOUND` — the requested resource does not exist
+        - `ALREADY_EXISTS` — duplicate resource (e.g. email already subscribed and confirmed)
+        - `UNAUTHORIZED` — missing or invalid Bearer token on an admin endpoint
+        - `CONFLICT` — state conflict (e.g. scrape already in progress)
+        - `INTERNAL_ERROR` — unexpected server-side failure; stack traces are never included
+      example: NOT_FOUND
+
+  # ---------------------------------------------------------------------------
+  # Reusable responses
+  # ---------------------------------------------------------------------------
+
+  responses:
+
+    BadRequest:
+      description: Bad request — validation failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            invalidEmail:
+              summary: Invalid email address
+              value:
+                error: 'email must be a valid email address'
+                code: INVALID_INPUT
+            invalidStatus:
+              summary: Invalid status query parameter
+              value:
+                error: '"status" must be one of: registered, candidate, removed, all'
+                code: INVALID_INPUT
+            invalidSince:
+              summary: Invalid since date
+              value:
+                error: '"since" must be a valid ISO 8601 date (YYYY-MM-DD)'
+                code: INVALID_INPUT
+            missingToken:
+              summary: Missing token query parameter
+              value:
+                error: '"token" query parameter is required'
+                code: INVALID_INPUT
+
+    Unauthorized:
+      description: Unauthorized — missing or invalid Bearer token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: Missing or invalid Authorization header
+            code: UNAUTHORIZED
+
+    NotFound:
+      description: Not found — resource does not exist or token is invalid/expired
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            pdpNotFound:
+              summary: PDP slug not found
+              value:
+                error: No PDP found with slug "unknown-platform"
+                code: NOT_FOUND
+            tokenNotFound:
+              summary: Subscription token not found or expired
+              value:
+                error: Token not found or has expired
+                code: NOT_FOUND
+
+    Conflict:
+      description: Conflict — resource already exists or operation is already in progress
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            scrapeInProgress:
+              summary: Scrape already running
+              value:
+                error: A scrape run is already in progress
+                code: CONFLICT
+            alreadySubscribed:
+              summary: Email already subscribed and confirmed
+              value:
+                error: This email address is already subscribed
+                code: ALREADY_EXISTS
+
+    InternalServerError:
+      description: Internal server error — unexpected failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: An unexpected error occurred
+            code: INTERNAL_ERROR
+
+  # ---------------------------------------------------------------------------
+  # Examples
+  # ---------------------------------------------------------------------------
+
+  examples:
+
+    PdpListResponseExample:
+      summary: Two PDPs — one registered, one candidate
+      value:
+        as_of: '2026-03-26T07:02:00Z'
+        source: https://www.impots.gouv.fr/plateformes-de-dematerialisation-partenaires
+        count: 2
+        pdps:
+          - name: Sovos Compliance SAS
+            slug: sovos-compliance-sas
+            status: registered
+            registration_number: PDP-2024-001
+            registration_date: '2024-06-15'
+            first_seen_at: '2024-06-16T07:00:00Z'
+            last_seen_at: '2026-03-26T07:00:00Z'
+            website_url: https://sovos.com
+            is_active: true
+          - name: Acme Facturation SAS
+            slug: acme-facturation-sas
+            status: candidate
+            registration_number: null
+            registration_date: null
+            first_seen_at: '2026-01-10T07:00:00Z'
+            last_seen_at: '2026-03-26T07:00:00Z'
+            website_url: https://acme-facturation.fr
+            is_active: true
+
+    PdpDetailResponseExample:
+      summary: Single PDP with two historical events
+      value:
+        pdp:
+          name: Sovos Compliance SAS
+          slug: sovos-compliance-sas
+          status: registered
+          registration_number: PDP-2024-001
+          registration_date: '2024-06-15'
+          first_seen_at: '2024-06-16T07:00:00Z'
+          last_seen_at: '2026-03-26T07:00:00Z'
+          website_url: https://sovos.com
+          is_active: true
+          status_history:
+            - id: 17
+              pdp_id: 5
+              event_type: status_changed
+              old_value:
+                status: candidate
+              new_value:
+                status: registered
+              detected_at: '2024-09-01T07:00:00Z'
+            - id: 3
+              pdp_id: 5
+              event_type: added
+              old_value: null
+              new_value:
+                status: candidate
+              detected_at: '2024-06-16T07:00:00Z'
+
+    ChangeListResponseExample:
+      summary: Paginated list with two events
+      value:
+        total: 123
+        limit: 50
+        offset: 0
+        changes:
+          - id: 99
+            pdp_id: 5
+            pdp_name: Sovos Compliance SAS
+            pdp_slug: sovos-compliance-sas
+            event_type: status_changed
+            old_value:
+              status: candidate
+            new_value:
+              status: registered
+            detected_at: '2026-03-26T07:00:00Z'
+          - id: 98
+            pdp_id: 12
+            pdp_name: Acme Facturation SAS
+            pdp_slug: acme-facturation-sas
+            event_type: added
+            old_value: null
+            new_value:
+              status: candidate
+            detected_at: '2026-03-25T07:00:00Z'
+
+    LatestChangesWithChangesExample:
+      summary: Most recent run detected two changes
+      value:
+        total: 2
+        limit: 2
+        offset: 0
+        changes:
+          - id: 101
+            pdp_id: 7
+            pdp_name: TaxTech Europe SAS
+            pdp_slug: taxtech-europe-sas
+            event_type: added
+            old_value: null
+            new_value:
+              status: candidate
+            detected_at: '2026-03-26T07:00:00Z'
+          - id: 100
+            pdp_id: 3
+            pdp_name: OldPDP France
+            pdp_slug: oldpdp-france
+            event_type: removed
+            old_value:
+              status: candidate
+            new_value: null
+            detected_at: '2026-03-26T07:00:00Z'
+
+    LatestChangesEmptyExample:
+      summary: Most recent run detected no changes
+      value:
+        total: 0
+        limit: 0
+        offset: 0
+        changes: []
+
+    StatusHealthyExample:
+      summary: Scraper is healthy
+      value:
+        last_run_at: '2026-03-26T07:02:00Z'
+        last_run_status: success
+        last_successful_run_at: '2026-03-26T07:02:00Z'
+        pdps_count: 42
+        changes_last_run: 2
+        next_scheduled_run: '2026-03-27T05:00:00Z'
+        uptime_ok: true
+
+    StatusUnhealthyExample:
+      summary: Last successful run was more than 48 hours ago (dead-man switch tripped)
+      value:
+        last_run_at: '2026-03-24T07:02:00Z'
+        last_run_status: failed
+        last_successful_run_at: '2026-03-23T07:02:00Z'
+        pdps_count: 42
+        changes_last_run: 0
+        next_scheduled_run: '2026-03-27T05:00:00Z'
+        uptime_ok: false
+
+    TriggerScrapeAcceptedExample:
+      summary: Scrape accepted
+      value:
+        message: Scrape triggered
+        run_id: 42
+
+    SubscribeRequestExample:
+      summary: Valid subscription request
+      value:
+        email: user@example.com

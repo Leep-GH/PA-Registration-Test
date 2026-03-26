@@ -1,0 +1,93 @@
+name: Daily PDP Scrape
+
+on:
+  schedule:
+    # 05:00 UTC = 06:00 CET / 07:00 CEST (covers both winter and summer time)
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+    # Allow manual trigger from GitHub Actions UI
+
+jobs:
+  scrape:
+    name: Trigger daily scrape
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger scrape
+        id: trigger
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -f -X POST \
+            "${{ vars.APP_URL }}/api/admin/trigger-scrape" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_SCRAPE_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "HTTP status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "Scrape triggered successfully."
+          elif [ "$HTTP_STATUS" -eq 409 ]; then
+            echo "Scrape already in progress — skipping."
+            exit 0
+          else
+            echo "Scrape trigger failed with HTTP $HTTP_STATUS"
+            exit 1
+          fi
+
+  retry-1:
+    name: Retry scrape (attempt 2, after 4h)
+    needs: scrape
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait 4 hours before retry
+        run: sleep 14400
+
+      - name: Retry scrape trigger
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -f -X POST \
+            "${{ vars.APP_URL }}/api/admin/trigger-scrape" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_SCRAPE_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "HTTP status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "Retry scrape triggered successfully."
+          elif [ "$HTTP_STATUS" -eq 409 ]; then
+            echo "Scrape already in progress — skipping."
+            exit 0
+          else
+            echo "Retry scrape trigger failed with HTTP $HTTP_STATUS"
+            exit 1
+          fi
+
+  retry-2:
+    name: Retry scrape (attempt 3, after another 4h)
+    needs: retry-1
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait 4 hours before final retry
+        run: sleep 14400
+
+      - name: Final retry scrape trigger
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -f -X POST \
+            "${{ vars.APP_URL }}/api/admin/trigger-scrape" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_SCRAPE_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "HTTP status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "Final retry scrape triggered successfully."
+          elif [ "$HTTP_STATUS" -eq 409 ]; then
+            echo "Scrape already in progress — skipping."
+            exit 0
+          else
+            echo "All 3 scrape attempts failed. Dead man's switch will trigger within 48h."
+            exit 1
+          fi
+
+      - name: Trigger dead man's switch alert
+        if: always()
+        run: |
+          # Call the status endpoint so it can immediately fire the dead man's switch
+          # alert if the last successful run is older than 48 hours.
+          curl -s -o /dev/null "${{ vars.APP_URL }}/api/v1/status" || true

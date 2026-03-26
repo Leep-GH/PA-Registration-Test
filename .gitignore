@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Test coverage output
+coverage/
+
+# Local environment overrides
+.env.local
+.env.*.local
+
+# SQLite database files (dev only)
+data/
+
+# Raw HTML snapshots (dev only)
+snapshots/
+
+# Notification log (dev only)
+notifications.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# Drizzle migrations (commit these — remove if you prefer not to)
+# src/lib/db/migrations/
+
+# TypeScript cache
+tsconfig.tsbuildinfo

@@ -1,0 +1,103 @@
+# Azure DevOps Pipeline — Sage Network Service
+# Triggers on main and feature branches. Deploys only from main.
+
+trigger:
+  branches:
+    include:
+      - main
+      - feature/*
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  buildConfiguration: "Release"
+  dotnetVersion: "8.0.x"
+  # Set these in your pipeline variables (not here):
+  #   AWS_ACCOUNT_ID, AWS_REGION, ECR_REPOSITORY
+
+stages:
+  # ── Build & Test ──────────────────────────────────────────
+  - stage: Build
+    displayName: "Build & Test"
+    jobs:
+      - job: BuildAndTest
+        displayName: "Build, Test, Lint"
+        steps:
+          - task: UseDotNet@2
+            displayName: "Install .NET SDK"
+            inputs:
+              packageType: "sdk"
+              version: $(dotnetVersion)
+
+          - script: dotnet restore
+            displayName: "Restore dependencies"
+
+          - script: dotnet build --configuration $(buildConfiguration) --no-restore
+            displayName: "Build"
+
+          - script: dotnet test --configuration $(buildConfiguration) --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory $(Build.SourcesDirectory)/TestResults
+            displayName: "Run tests"
+
+          - task: PublishTestResults@2
+            displayName: "Publish test results"
+            inputs:
+              testResultsFormat: "VSTest"
+              testResultsFiles: "$(Build.SourcesDirectory)/TestResults/**/*.trx"
+            condition: succeededOrFailed()
+
+          - task: PublishCodeCoverageResults@2
+            displayName: "Publish code coverage"
+            inputs:
+              summaryFileLocation: "$(Build.SourcesDirectory)/TestResults/**/coverage.cobertura.xml"
+            condition: succeededOrFailed()
+
+          # OpenAPI spec linting (optional — remove if not using redocly)
+          - script: |
+              npm install -g @redocly/cli
+              npx @redocly/cli lint docs/api/*.yaml
+            displayName: "Lint OpenAPI specs"
+            continueOnError: true
+
+  # ── Package ───────────────────────────────────────────────
+  - stage: Package
+    displayName: "Package"
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: DockerBuild
+        displayName: "Build & push container"
+        steps:
+          - task: Docker@2
+            displayName: "Build container image"
+            inputs:
+              command: "build"
+              Dockerfile: "Dockerfile"
+              tags: |
+                $(Build.BuildId)
+                latest
+
+          # Push to ECR — configure AWS credentials in pipeline variables
+          # - script: |
+          #     aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
+          #     docker tag $(ECR_REPOSITORY):$(Build.BuildId) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(ECR_REPOSITORY):$(Build.BuildId)
+          #     docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(ECR_REPOSITORY):$(Build.BuildId)
+          #   displayName: "Push to ECR"
+
+  # ── Deploy (stub — customise per environment) ─────────────
+  # - stage: DeployDev
+  #   displayName: "Deploy to Dev"
+  #   dependsOn: Package
+  #   jobs:
+  #     - deployment: DeployDev
+  #       environment: "dev"
+  #       strategy:
+  #         runOnce:
+  #           deploy:
+  #             steps:
+  #               - script: echo "Deploy to dev via CDK or ECS update"

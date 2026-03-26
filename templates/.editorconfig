@@ -1,0 +1,87 @@
+root = true
+
+# All files
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# C# files
+[*.cs]
+# Organise usings
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# Nullable reference types — always enabled
+dotnet_diagnostic.CS8600.severity = warning
+dotnet_diagnostic.CS8601.severity = warning
+dotnet_diagnostic.CS8602.severity = warning
+dotnet_diagnostic.CS8603.severity = warning
+dotnet_diagnostic.CS8604.severity = warning
+
+# Prefer records for data types
+csharp_style_prefer_record_struct = true:suggestion
+
+# Prefer pattern matching
+csharp_style_pattern_matching_over_is_with_cast_check = true:warning
+csharp_style_pattern_matching_over_as_with_null_check = true:warning
+csharp_style_prefer_switch_expression = true:suggestion
+csharp_style_prefer_not_pattern = true:suggestion
+
+# Use file-scoped namespaces
+csharp_style_namespace_declarations = file_scoped:warning
+
+# Prefer expression bodies for simple members
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_expression_bodied_accessors = true:suggestion
+
+# Prefer var when type is apparent
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+
+# Use 'sealed' by default — warn when missing
+dotnet_diagnostic.CA1852.severity = warning
+
+# Async methods must accept CancellationToken
+dotnet_diagnostic.CA1068.severity = warning
+
+# XML documentation on public members
+dotnet_diagnostic.CS1591.severity = warning
+
+# Braces
+csharp_prefer_braces = true:suggestion
+
+# New line preferences
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+
+# Indentation
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+
+# Spacing
+csharp_space_after_cast = false
+csharp_space_after_keywords_in_control_flow_statements = true
+
+# JSON files
+[*.json]
+indent_size = 2
+
+# YAML files
+[*.{yaml,yml}]
+indent_size = 2
+
+# Markdown
+[*.md]
+trim_trailing_whitespace = false
+
+# CDK / TypeScript (if used for CDK)
+[*.{ts,js}]
+indent_size = 2
