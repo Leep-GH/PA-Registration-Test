@@ -1,8 +1,6 @@
 import { mkdirSync } from 'fs';
 import { dirname, resolve } from 'path';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
 import * as schema from './schema';
 
 /**
@@ -36,6 +34,8 @@ export function getDb(): DbClient {
   } else {
     const dbPath = resolve(dbUrl.replace('file:', ''));
     mkdirSync(dirname(dbPath), { recursive: true });
+    const Database = require('better-sqlite3');
+    const { drizzle } = require('drizzle-orm/better-sqlite3');
     const sqlite = new Database(dbPath);
     // Enable WAL mode for better concurrent read performance
     sqlite.pragma('journal_mode = WAL');
