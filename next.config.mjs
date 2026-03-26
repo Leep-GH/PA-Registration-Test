@@ -10,12 +10,14 @@ const nextConfig = {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         playwright: false,
+        'better-sqlite3': false,
       };
       // Mark optional packages as externals so webpack doesn't try to bundle them
       const existing = config.externals ?? [];
       config.externals = [
         ...(Array.isArray(existing) ? existing : [existing]),
         '@vercel/blob',
+        'better-sqlite3',
       ];
     }
     return config;
