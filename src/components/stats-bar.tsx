@@ -7,47 +7,23 @@ interface Props {
 
 export default function StatsBar({ registeredCount, candidateCount, addedThisMonth, removedThisMonth }: Props) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      <StatCard
-        label="Immatriculées"
-        value={registeredCount}
-        colour="text-green-700"
-        bgColour="bg-green-50 border-green-200"
-      />
-      <StatCard
-        label="Candidates"
-        value={candidateCount}
-        colour="text-amber-700"
-        bgColour="bg-amber-50 border-amber-200"
-      />
-      <StatCard
-        label="Ajouts (30j)"
-        value={addedThisMonth}
-        colour="text-blue-700"
-        bgColour="bg-blue-50 border-blue-200"
-      />
-      <StatCard
-        label="Retraits (30j)"
-        value={removedThisMonth}
-        colour="text-red-700"
-        bgColour="bg-red-50 border-red-200"
-      />
+    <div className="flex items-baseline gap-8 sm:gap-12 overflow-x-auto py-2">
+      <Stat value={registeredCount} label="Immatriculées" accent />
+      <div className="w-px h-8 bg-navy/10 flex-shrink-0" />
+      <Stat value={candidateCount} label="Candidates" />
+      <div className="w-px h-8 bg-navy/10 flex-shrink-0" />
+      <Stat value={addedThisMonth} label="Ajouts (30j)" />
+      <div className="w-px h-8 bg-navy/10 flex-shrink-0" />
+      <Stat value={removedThisMonth} label="Retraits (30j)" />
     </div>
   );
 }
 
-interface StatCardProps {
-  label: string;
-  value: number;
-  colour: string;
-  bgColour: string;
-}
-
-function StatCard({ label, value, colour, bgColour }: StatCardProps) {
+function Stat({ value, label, accent = false }: { value: number; label: string; accent?: boolean }) {
   return (
-    <div className={`flex flex-col items-center justify-center p-5 rounded-lg border ${bgColour}`}>
-      <span className={`text-3xl font-bold ${colour}`}>{value}</span>
-      <span className="mt-1 text-sm text-gray-600">{label}</span>
+    <div className="flex flex-col items-start flex-shrink-0">
+      <span className={`font-display text-4xl sm:text-5xl tabular-nums ${accent ? 'text-accent' : 'text-navy'}`}>{value}</span>
+      <span className="text-[11px] font-body text-navy/40 uppercase tracking-wider mt-1">{label}</span>
     </div>
   );
 }

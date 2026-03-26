@@ -33,24 +33,24 @@ export default async function DashboardPage() {
   const removedThisMonth = recentChanges.changes.filter((c) => c.eventType === 'removed').length;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Registre des Plateformes Agréées (PA, ex-PDP)
+        <h1 className="font-display text-3xl sm:text-4xl text-navy">
+          Registre des Plateformes Agréées
         </h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-3 text-navy/60 font-body text-sm leading-relaxed max-w-2xl">
           Suivi du registre officiel DGFiP mis à jour quotidiennement.{' '}
           <a
             href="https://www.impots.gouv.fr"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
+            className="text-accent hover:underline"
           >
             Source : impots.gouv.fr
           </a>
         </p>
         {lastRun && (
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-2 text-xs font-mono text-navy/40 uppercase tracking-wider">
             Dernière mise à jour :{' '}
             {new Date(lastRun.runAt).toLocaleString('fr-FR', {
               dateStyle: 'long',
@@ -58,6 +58,7 @@ export default async function DashboardPage() {
             })}
           </p>
         )}
+        <div className="hr-rule mt-6" />
       </div>
 
       <StatsBar
@@ -67,10 +68,12 @@ export default async function DashboardPage() {
         removedThisMonth={removedThisMonth}
       />
 
+      <div className="hr-rule" />
+
       <PdpTable pdps={allPdps} />
 
-      <div className="border-t border-gray-200 pt-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="hr-rule pt-10">
+        <h2 className="font-display text-xl text-navy mb-4">
           Recevoir les alertes de modification
         </h2>
         <SubscribeForm />

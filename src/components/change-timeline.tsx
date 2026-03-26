@@ -11,16 +11,16 @@ interface Props {
   changes: ChangeEventWithPdp[];
 }
 
-const EVENT_LABELS: Record<string, { label: string; colour: string }> = {
-  added: { label: 'Ajouté', colour: 'bg-green-100 text-green-800 border-green-200' },
-  removed: { label: 'Retiré', colour: 'bg-red-100 text-red-800 border-red-200' },
-  status_changed: { label: 'Statut modifié', colour: 'bg-amber-100 text-amber-800 border-amber-200' },
+const EVENT_LABELS: Record<string, { label: string; badgeClass: string }> = {
+  added: { label: 'Ajouté', badgeClass: 'status-badge-registered' },
+  removed: { label: 'Retiré', badgeClass: 'status-badge-removed' },
+  status_changed: { label: 'Modifié', badgeClass: 'status-badge-candidate' },
 };
 
 const BORDER_COLOURS: Record<string, string> = {
-  added: 'border-green-400',
-  removed: 'border-red-400',
-  status_changed: 'border-amber-400',
+  added: 'border-l-emerald-600',
+  removed: 'border-l-red-500',
+  status_changed: 'border-l-amber-500',
 };
 
 function groupByDate(changes: ChangeEventWithPdp[]): Map<string, ChangeEventWithPdp[]> {
@@ -44,7 +44,7 @@ function formatDate(isoDate: string): string {
 export default function ChangeTimeline({ changes }: Props) {
   if (changes.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500 border border-dashed border-gray-300 rounded-lg">
+      <div className="text-center py-12 text-navy/40 border border-dashed border-navy/10 rounded font-body">
         Aucun changement détecté depuis le lancement du tracker.
       </div>
     );
@@ -53,43 +53,41 @@ export default function ChangeTimeline({ changes }: Props) {
   const groups = groupByDate(changes);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {Array.from(groups.entries()).map(([date, events]) => (
         <div key={date}>
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          <h2 className="text-xs font-mono font-medium text-navy/40 uppercase tracking-[0.2em] mb-4">
             {formatDate(date)}
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {events.map((event) => {
               const meta = EVENT_LABELS[event.eventType] ?? EVENT_LABELS.status_changed;
-              const borderColour = BORDER_COLOURS[event.eventType] ?? 'border-gray-300';
+              const borderColour = BORDER_COLOURS[event.eventType] ?? 'border-l-gray-300';
               const oldVal = event.oldValue ? JSON.parse(event.oldValue) : null;
               const newVal = event.newValue ? JSON.parse(event.newValue) : null;
 
               return (
                 <div
                   key={event.id}
-                  className={`flex items-start gap-3 p-4 bg-white border-l-4 ${borderColour} rounded-r-lg shadow-sm`}
+                  className={`flex items-start gap-3 px-4 py-3 border-l-2 ${borderColour} hover:bg-navy/[0.02] transition-colors`}
                 >
-                  <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap ${meta.colour}`}
-                  >
+                  <span className={meta.badgeClass}>
                     {meta.label}
                   </span>
                   <div className="flex-1 min-w-0">
                     <a
                       href={`/pdp/${event.pdpSlug}`}
-                      className="font-medium text-gray-900 hover:text-blue-600 hover:underline truncate block"
+                      className="font-body font-medium text-navy hover:text-accent transition-colors truncate block"
                     >
                       {event.pdpName}
                     </a>
                     {event.eventType === 'status_changed' && oldVal && newVal && (
-                      <p className="text-sm text-gray-500 mt-0.5">
+                      <p className="text-xs font-mono text-navy/40 mt-0.5">
                         {oldVal.status} → {newVal.status}
                       </p>
                     )}
                   </div>
-                  <time className="text-xs text-gray-400 whitespace-nowrap">
+                  <time className="text-[10px] font-mono text-navy/30 whitespace-nowrap uppercase tracking-wider">
                     {new Date(event.detectedAt).toLocaleTimeString('fr-FR', {
                       hour: '2-digit',
                       minute: '2-digit',

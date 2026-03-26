@@ -38,17 +38,18 @@ export default async function HistoriquePage({ searchParams }: Props) {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Historique des modifications</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="font-display text-3xl sm:text-4xl text-navy">Historique des modifications</h1>
+        <p className="mt-3 text-navy/60 font-body text-sm leading-relaxed max-w-2xl">
           Toutes les modifications détectées dans le registre DGFiP des Plateformes Agréées depuis le démarrage du tracker.
         </p>
+        <div className="hr-rule mt-6" />
       </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-sm text-gray-500 mr-1">Filtrer :</span>
+        <span className="text-xs font-body text-navy/40 uppercase tracking-wide mr-1">Filtrer :</span>
         {[
           { label: 'Tous', value: undefined },
           { label: 'Ajouts', value: 'added' },
@@ -61,10 +62,10 @@ export default async function HistoriquePage({ searchParams }: Props) {
             <Link
               key={label}
               href={href}
-              className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
+              className={`px-4 py-3 min-h-[44px] inline-flex items-center text-sm font-body font-medium uppercase tracking-wide transition-colors ${
                 isActive
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                  ? 'text-accent border-b-2 border-accent'
+                  : 'text-navy/55 hover:text-navy'
               }`}
             >
               {label}
@@ -76,13 +77,13 @@ export default async function HistoriquePage({ searchParams }: Props) {
         <a
           href="/api/v1/pdps?format=csv"
           download="pdps.csv"
-          className="ml-auto px-3 py-1 text-sm text-blue-600 border border-blue-300 rounded-full hover:bg-blue-50"
+          className="ml-auto px-3 py-1 text-xs font-mono text-accent uppercase tracking-wider hover:underline"
         >
           Télécharger CSV
         </a>
       </div>
 
-      <p className="text-sm text-gray-500">
+      <p className="text-xs font-mono text-navy/40 uppercase tracking-wider">
         {total} modification{total !== 1 ? 's' : ''} au total
       </p>
 
@@ -94,18 +95,18 @@ export default async function HistoriquePage({ searchParams }: Props) {
           {pageNum > 1 && (
             <Link
               href={`?${eventType ? `type=${eventType}&` : ''}page=${pageNum - 1}`}
-              className="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50"
+              className="px-4 py-2 text-xs font-mono uppercase tracking-wider text-navy/50 border border-navy/10 hover:bg-navy/[0.02] transition-colors"
             >
               ← Précédent
             </Link>
           )}
-          <span className="px-4 py-2 text-sm text-gray-500">
+          <span className="px-4 py-2 text-xs font-mono text-navy/40">
             Page {pageNum} / {totalPages}
           </span>
           {pageNum < totalPages && (
             <Link
               href={`?${eventType ? `type=${eventType}&` : ''}page=${pageNum + 1}`}
-              className="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50"
+              className="px-4 py-2 text-xs font-mono uppercase tracking-wider text-navy/50 border border-navy/10 hover:bg-navy/[0.02] transition-colors"
             >
               Suivant →
             </Link>

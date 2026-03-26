@@ -15,9 +15,9 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  registered: 'bg-green-100 text-green-800 border border-green-200',
-  candidate: 'bg-amber-100 text-amber-800 border border-amber-200',
-  removed: 'bg-red-100 text-red-800 border border-red-200',
+  registered: 'status-badge-registered',
+  candidate: 'status-badge-candidate',
+  removed: 'status-badge-removed',
 };
 
 interface Props {
@@ -72,8 +72,8 @@ export default function PdpTable({ pdps }: Props) {
     });
 
   function SortArrow({ col }: { col: SortKey }) {
-    if (sortKey !== col) return <span className="ml-1 text-gray-300">↕</span>;
-    return <span className="ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>;
+    if (sortKey !== col) return <span className="ml-1 text-navy/15">↕</span>;
+    return <span className="ml-1 text-accent">{sortDir === 'asc' ? '↑' : '↓'}</span>;
   }
 
   return (
@@ -85,10 +85,10 @@ export default function PdpTable({ pdps }: Props) {
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
+              className={`px-4 py-3 min-h-[44px] text-sm font-body font-medium uppercase tracking-wide transition-colors cursor-pointer select-none ${
                 statusFilter === s
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                  ? 'text-accent border-b-2 border-accent'
+                  : 'text-navy/55 hover:text-navy'
               }`}
             >
               {s === 'all' ? 'Tous' : STATUS_LABELS[s] ?? s}
@@ -100,19 +100,19 @@ export default function PdpTable({ pdps }: Props) {
           placeholder="Rechercher…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="ml-auto border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="ml-auto border border-navy/15 bg-cream rounded px-3 py-1.5 text-sm font-body focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent placeholder:text-navy/30"
         />
       </div>
 
-      <p className="text-sm text-gray-500">
+      <p className="text-xs font-mono text-navy/40 uppercase tracking-wider">
         {filtered.length} plateforme{filtered.length !== 1 ? 's agréée' : ' agréée'}{filtered.length !== 1 ? 's' : ''}
       </p>
 
       {/* Table */}
-      <div className="overflow-x-auto border border-gray-200 rounded-lg">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm font-body">
+          <thead>
+            <tr className="border-b-2 border-navy/10">
               {(
                 [
                   { key: 'name' as SortKey, label: 'Nom' },
@@ -125,8 +125,8 @@ export default function PdpTable({ pdps }: Props) {
               ).map(({ key, label }) => (
                 <th
                   key={label}
-                  className={`px-4 py-3 text-left font-medium text-gray-700 whitespace-nowrap ${
-                    key ? 'cursor-pointer hover:text-blue-600 select-none' : ''
+                  className={`px-3 py-2.5 text-left text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest whitespace-nowrap ${
+                    key ? 'cursor-pointer hover:text-navy select-none' : ''
                   }`}
                   onClick={() => key && handleSort(key)}
                 >
@@ -136,54 +136,54 @@ export default function PdpTable({ pdps }: Props) {
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={6} className="px-3 py-8 text-center text-navy/40 font-body">
                   Aucune plateforme agréée trouvée.
                 </td>
               </tr>
             ) : (
               filtered.map((pdp) => (
-                <tr key={pdp.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-medium">
+                <tr key={pdp.id} className="border-b border-navy/5 hover:bg-navy/[0.02] transition-colors">
+                  <td className="px-3 py-2.5 font-medium">
                     <Link
                       href={`/pdp/${pdp.slug}`}
-                      className="text-blue-600 hover:underline"
+                      className="text-navy hover:text-accent transition-colors"
                     >
                       {pdp.name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2.5">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                        STATUS_BADGE[pdp.status] ?? 'bg-gray-100 text-gray-800'
-                      }`}
+                      className={
+                        STATUS_BADGE[pdp.status] ?? 'status-badge border-l-gray-400 text-gray-600'
+                      }
                     >
                       {STATUS_LABELS[pdp.status] ?? pdp.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-3 py-2.5 font-mono text-xs text-navy/50">
                     {pdp.registrationNumber ?? '—'}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                  <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
                     {pdp.registrationDate ?? '—'}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2.5">
                     {pdp.websiteUrl ? (
                       <a
                         href={pdp.websiteUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline text-xs truncate block max-w-[160px]"
+                        className="text-accent hover:underline text-xs font-mono truncate block max-w-[160px]"
                       >
                         {pdp.websiteUrl.replace(/^https?:\/\//, '')}
                       </a>
                     ) : (
-                      <span className="text-gray-400">—</span>
+                      <span className="text-navy/20">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                  <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
                     {new Date(pdp.firstSeenAt).toLocaleDateString('fr-FR')}
                   </td>
                 </tr>

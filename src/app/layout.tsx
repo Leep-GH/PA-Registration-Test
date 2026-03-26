@@ -35,6 +35,12 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
         <link
           rel="alternate"
           type="application/rss+xml"
@@ -42,36 +48,51 @@ export default function RootLayout({
           href={`${appUrl}/rss.xml`}
         />
       </head>
-      <body className="min-h-screen bg-gray-50 text-gray-900">
-        <header className="bg-white border-b border-gray-200">
-          <nav className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-6">
-            <Link href="/" className="font-semibold text-gray-900 hover:text-blue-600">
-              PA Tracker
+      <body className="min-h-screen bg-cream text-navy">
+        <header className="bg-navy text-cream">
+          <div className="max-w-5xl mx-auto px-4 pt-8 pb-6">
+            <Link href="/" className="block">
+              <span className="font-display text-3xl sm:text-4xl tracking-tight">
+                Registre{' '}
+                <span className="text-accent">PA</span>
+              </span>
+              <span className="block text-cream/50 text-[11px] font-body uppercase tracking-[0.3em] mt-1.5">
+                Plateformes Agréées · Suivi DGFiP
+              </span>
             </Link>
-            <Link href="/" className="text-sm text-gray-600 hover:text-blue-600">
+          </div>
+          <nav className="max-w-5xl mx-auto px-4 pb-4 flex items-center gap-5 text-sm font-body">
+            <Link href="/" className="text-cream/70 hover:text-cream transition-colors">
               Registre
             </Link>
-            <Link href="/historique" className="text-sm text-gray-600 hover:text-blue-600">
+            <Link href="/historique" className="text-cream/70 hover:text-cream transition-colors">
               Historique
             </Link>
+            <a
+              href="/rss.xml"
+              className="ml-auto text-cream/40 hover:text-cream transition-colors text-xs font-mono uppercase tracking-wider"
+            >
+              RSS
+            </a>
           </nav>
+          <div className="h-px bg-gradient-to-r from-accent via-accent/60 to-transparent" />
         </header>
 
-        <main className="max-w-6xl mx-auto px-4 py-8">{children}</main>
+        <main className="max-w-5xl mx-auto px-4 py-10">{children}</main>
 
-        <footer className="border-t border-gray-200 mt-12 py-6 text-center text-sm text-gray-500">
+        <footer className="hr-rule mt-16 py-8 text-center text-xs text-navy/40 font-mono">
           <p>
             Tracker non officiel — données source :{' '}
             <a
               href="https://www.impots.gouv.fr"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
+              className="text-accent hover:underline"
             >
               impots.gouv.fr
             </a>
           </p>
-          <p className="mt-1">
+          <p className="mt-2">
             <Link href="/privacy" className="hover:underline">
               Politique de confidentialité
             </Link>

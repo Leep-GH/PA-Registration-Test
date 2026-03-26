@@ -35,15 +35,15 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_CLASSES: Record<string, string> = {
-  registered: 'bg-green-100 text-green-800 border-green-200',
-  candidate: 'bg-amber-100 text-amber-800 border-amber-200',
-  removed: 'bg-red-100 text-red-800 border-red-200',
+  registered: 'status-badge-registered',
+  candidate: 'status-badge-candidate',
+  removed: 'status-badge-removed',
 };
 
 const EVENT_LABELS: Record<string, { label: string; classes: string }> = {
-  added: { label: 'Ajout', classes: 'bg-green-100 text-green-800' },
-  removed: { label: 'Suppression', classes: 'bg-red-100 text-red-800' },
-  status_changed: { label: 'Changement', classes: 'bg-amber-100 text-amber-800' },
+  added: { label: 'Ajout', classes: 'status-badge-registered' },
+  removed: { label: 'Suppression', classes: 'status-badge-removed' },
+  status_changed: { label: 'Changement', classes: 'status-badge-candidate' },
 };
 
 export default async function PdpDetailPage({ params }: Props) {
@@ -52,69 +52,69 @@ export default async function PdpDetailPage({ params }: Props) {
 
   const history = await getChangesForPdp(pdp.id, 50).catch(() => []);
 
-  const statusClass = STATUS_CLASSES[pdp.status] ?? 'bg-gray-100 text-gray-800 border-gray-200';
+  const statusClass = STATUS_CLASSES[pdp.status] ?? 'status-badge border-l-gray-400 text-navy/50';
   const statusLabel = STATUS_LABELS[pdp.status] ?? pdp.status;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div>
-        <Link href="/" className="text-sm text-blue-600 hover:underline">
+        <Link href="/" className="text-xs font-mono text-accent uppercase tracking-wider hover:underline">
           ← Retour au registre
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="border border-navy/10 p-6">
         <div className="flex flex-wrap items-start gap-4">
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-gray-900 truncate">{pdp.name}</h1>
+            <h1 className="font-display text-3xl text-navy truncate">{pdp.name}</h1>
             {pdp.registrationNumber && (
-              <p className="text-sm text-gray-500 mt-1">N° {pdp.registrationNumber}</p>
+              <p className="text-xs font-mono text-navy/40 mt-2">N° {pdp.registrationNumber}</p>
             )}
           </div>
-          <span
-            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${statusClass}`}
-          >
+          <span className={statusClass}>
             {statusLabel}
           </span>
         </div>
 
-        <dl className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+        <div className="hr-rule mt-6" />
+
+        <dl className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           {pdp.registrationDate && (
             <>
-              <dt className="text-gray-500">Date d&apos;immatriculation</dt>
-              <dd className="text-gray-900">{pdp.registrationDate}</dd>
+              <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">Date d&apos;immatriculation</dt>
+              <dd className="text-navy font-body">{pdp.registrationDate}</dd>
             </>
           )}
           {pdp.websiteUrl && (
             <>
-              <dt className="text-gray-500">Site web</dt>
+              <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">Site web</dt>
               <dd>
                 <a
                   href={pdp.websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline truncate block"
+                  className="text-accent hover:underline truncate block font-mono text-xs"
                 >
                   {pdp.websiteUrl}
                 </a>
               </dd>
             </>
           )}
-          <dt className="text-gray-500">Première observation</dt>
-          <dd className="text-gray-900">
+          <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">Première observation</dt>
+          <dd className="text-navy font-body">
             {new Date(pdp.firstSeenAt).toLocaleDateString('fr-FR', { dateStyle: 'long' })}
           </dd>
-          <dt className="text-gray-500">Dernière observation</dt>
-          <dd className="text-gray-900">
+          <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">Dernière observation</dt>
+          <dd className="text-navy font-body">
             {new Date(pdp.lastSeenAt).toLocaleDateString('fr-FR', { dateStyle: 'long' })}
           </dd>
-          <dt className="text-gray-500">Source</dt>
+          <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">Source</dt>
           <dd>
             <a
               href="https://www.impots.gouv.fr"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
+              className="text-accent hover:underline font-mono text-xs"
             >
               impots.gouv.fr
             </a>
@@ -124,12 +124,12 @@ export default async function PdpDetailPage({ params }: Props) {
 
       {/* Change history */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Historique des modifications</h2>
+        <h2 className="font-display text-xl text-navy mb-4">Historique des modifications</h2>
 
         {history.length === 0 ? (
-          <p className="text-gray-500 text-sm">Aucune modification enregistrée.</p>
+          <p className="text-navy/40 text-sm font-body">Aucune modification enregistrée.</p>
         ) : (
-          <ol className="relative border-l border-gray-200 ml-3 space-y-6">
+          <ol className="relative border-l border-navy/10 ml-3 space-y-6">
             {history.map((event) => {
               const et = EVENT_LABELS[event.eventType] ?? { label: event.eventType, classes: 'bg-gray-100 text-gray-800' };
               let detail = '';
@@ -143,21 +143,19 @@ export default async function PdpDetailPage({ params }: Props) {
 
               return (
                 <li key={event.id} className="ml-4">
-                  <div className="absolute w-3 h-3 bg-gray-200 rounded-full -left-1.5 border border-white" />
+                  <div className="absolute w-2 h-2 bg-accent rounded-full -left-1 border-2 border-cream" />
                   <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${et.classes}`}
-                    >
+                    <span className={et.classes}>
                       {et.label}
                     </span>
-                    <time className="text-xs text-gray-500">
+                    <time className="text-[10px] font-mono text-navy/30 uppercase tracking-wider">
                       {new Date(event.detectedAt).toLocaleString('fr-FR', {
                         dateStyle: 'medium',
                         timeStyle: 'short',
                       })}
                     </time>
                   </div>
-                  {detail && <p className="mt-1 text-sm text-gray-600">{detail}</p>}
+                  {detail && <p className="mt-1 text-xs font-mono text-navy/40">{detail}</p>}
                 </li>
               );
             })}
