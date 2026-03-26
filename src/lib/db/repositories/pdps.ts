@@ -22,7 +22,7 @@ export async function upsertPdp(record: PdpRecord, runAt: string): Promise<numbe
     .select({ id: pdps.id })
     .from(pdps)
     .where(eq(pdps.slug, record.slug))
-    .all();
+    ;
 
   if (existing.length > 0) {
     await db
@@ -80,23 +80,23 @@ export async function getAllPdps(filter?: {
   }
 
   if (conditions.length === 0) {
-    return db.select().from(pdps).orderBy(pdps.name).all();
+    return db.select().from(pdps).orderBy(pdps.name);
   }
   if (conditions.length === 1) {
-    return db.select().from(pdps).where(conditions[0]).orderBy(pdps.name).all();
+    return db.select().from(pdps).where(conditions[0]).orderBy(pdps.name);
   }
   return db
     .select()
     .from(pdps)
     .where(and(...conditions))
     .orderBy(pdps.name)
-    .all();
+    ;
 }
 
 /** Returns a single PDP by slug, or null if not found. */
 export async function getPdpBySlug(slug: string): Promise<Pdp | null> {
   const db = getDb();
-  const rows = await db.select().from(pdps).where(eq(pdps.slug, slug)).all();
+  const rows = await db.select().from(pdps).where(eq(pdps.slug, slug));
   return rows[0] ?? null;
 }
 
@@ -116,6 +116,6 @@ export async function countActivePdps(): Promise<number> {
     .select({ count: sql<number>`count(*)` })
     .from(pdps)
     .where(eq(pdps.isActive, true))
-    .all();
+    ;
   return result[0]?.count ?? 0;
 }

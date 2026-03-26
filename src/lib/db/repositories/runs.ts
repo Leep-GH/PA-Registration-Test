@@ -43,7 +43,7 @@ export async function getLastRun(): Promise<ScrapeRun | null> {
     .from(scrapeRuns)
     .orderBy(sql`${scrapeRuns.id} desc`)
     .limit(1)
-    .all();
+    ;
   return rows[0] ?? null;
 }
 
@@ -58,7 +58,7 @@ export async function getLastSuccessfulRun(): Promise<ScrapeRun | null> {
     )
     .orderBy(sql`${scrapeRuns.id} desc`)
     .limit(1)
-    .all();
+    ;
   return rows[0] ?? null;
 }
 
@@ -77,7 +77,7 @@ export async function isRunInProgress(): Promise<boolean> {
       sql`${scrapeRuns.status} is null and ${scrapeRuns.runAt} >= ${fiveMinutesAgo}`,
     )
     .limit(1)
-    .all();
+    ;
   return rows.length > 0;
 }
 
@@ -90,5 +90,5 @@ export async function getRecentRuns(limit = 10): Promise<ScrapeRun[]> {
     .where(isNotNull(scrapeRuns.status))
     .orderBy(sql`${scrapeRuns.id} desc`)
     .limit(limit)
-    .all();
+    ;
 }

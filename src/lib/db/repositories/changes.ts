@@ -71,20 +71,20 @@ export async function getChanges(opts: GetChangesOpts): Promise<ChangesPage> {
     .leftJoin(pdps, eq(changeEvents.pdpId, pdps.id));
 
   const countRows = where
-    ? await countQuery.where(where).all()
-    : await countQuery.all();
+    ? await countQuery.where(where)
+    : await countQuery;
   const dataRows = where
     ? await dataQuery
         .where(where)
         .orderBy(sql`${changeEvents.detectedAt} desc`)
         .limit(limit)
         .offset(offset)
-        .all()
+        
     : await dataQuery
         .orderBy(sql`${changeEvents.detectedAt} desc`)
         .limit(limit)
         .offset(offset)
-        .all();
+        ;
 
   return {
     total: countRows[0]?.count ?? 0,
@@ -108,7 +108,7 @@ export async function getLatestRunChanges(): Promise<
     .from(changeEvents)
     .orderBy(sql`${changeEvents.detectedAt} desc`)
     .limit(1)
-    .all();
+    ;
 
   if (!latest[0]) return [];
 
@@ -126,7 +126,7 @@ export async function getLatestRunChanges(): Promise<
     .from(changeEvents)
     .leftJoin(pdps, eq(changeEvents.pdpId, pdps.id))
     .where(eq(changeEvents.detectedAt, latest[0].detectedAt))
-    .all();
+    ;
 
   return rows.map((r) => ({
     ...r,
@@ -147,5 +147,5 @@ export async function getChangesForPdp(
     .where(eq(changeEvents.pdpId, pdpId))
     .orderBy(sql`${changeEvents.detectedAt} desc`)
     .limit(limit)
-    .all();
+    ;
 }

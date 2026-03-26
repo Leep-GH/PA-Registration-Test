@@ -34,7 +34,7 @@ export async function confirmSubscriber(token: string): Promise<string | null> {
     .select({ email: subscribers.email })
     .from(subscribers)
     .where(eq(subscribers.token, token))
-    .all();
+    ;
 
   if (rows.length === 0) return null;
 
@@ -55,7 +55,7 @@ export async function unsubscribeByToken(token: string): Promise<boolean> {
     .select({ id: subscribers.id })
     .from(subscribers)
     .where(eq(subscribers.token, token))
-    .all();
+    ;
 
   if (rows.length === 0) return false;
 
@@ -80,7 +80,7 @@ export async function getConfirmedSubscribers(): Promise<string[]> {
     .select({ email: subscribers.email })
     .from(subscribers)
     .where(and(eq(subscribers.confirmed, true), isNull(subscribers.unsubscribedAt)))
-    .all();
+    ;
   return rows.map((r) => r.email);
 }
 
@@ -91,7 +91,7 @@ export async function isEmailConfirmed(email: string): Promise<boolean> {
     .select({ confirmed: subscribers.confirmed })
     .from(subscribers)
     .where(and(eq(subscribers.email, email), isNull(subscribers.unsubscribedAt)))
-    .all();
+    ;
   return rows.some((r) => r.confirmed === true);
 }
 
@@ -108,7 +108,7 @@ export async function isEmailPending(email: string): Promise<boolean> {
         isNull(subscribers.unsubscribedAt),
       ),
     )
-    .all();
+    ;
   return rows.length > 0;
 }
 
@@ -124,7 +124,7 @@ export async function purgeUnconfirmed(olderThanHours: number): Promise<number> 
     .select({ id: subscribers.id })
     .from(subscribers)
     .where(and(eq(subscribers.confirmed, false), lt(subscribers.subscribedAt, cutoff)))
-    .all();
+    ;
 
   if (toDelete.length === 0) return 0;
 
@@ -153,7 +153,7 @@ export async function getPendingToken(email: string): Promise<string | null> {
         isNull(subscribers.unsubscribedAt),
       ),
     )
-    .all();
+    ;
   return rows[0]?.token ?? null;
 }
 
@@ -165,11 +165,11 @@ export async function getSubscriberStats(): Promise<{
   const db = getDb();
   const rows = await db
     .select({
-      confirmed: sql<number>`sum(case when ${subscribers.confirmed} = 1 and ${subscribers.unsubscribedAt} is null then 1 else 0 end)`,
-      pending: sql<number>`sum(case when ${subscribers.confirmed} = 0 then 1 else 0 end)`,
+      confirmed: sql<number>`sum(case when ${subscribers.confirmed} = true and ${subscribers.unsubscribedAt} is null then 1 else 0 end)`,
+      pending: sql<number>`sum(case when ${subscribers.confirmed} = false then 1 else 0 end)`,
     })
     .from(subscribers)
-    .all();
+    ;
   return {
     confirmed: rows[0]?.confirmed ?? 0,
     pending: rows[0]?.pending ?? 0,

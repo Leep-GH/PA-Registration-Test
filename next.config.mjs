@@ -1,23 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverComponentsExternalPackages: ['better-sqlite3', 'playwright', '@vercel/blob'],
+    serverComponentsExternalPackages: ['playwright', '@vercel/blob'],
   },
   webpack(config, { isServer }) {
     if (isServer) {
-      // playwright and @vercel/blob are optional — don't fail if not installed
       config.resolve = config.resolve ?? {};
       config.resolve.fallback = {
         ...config.resolve.fallback,
         playwright: false,
-        'better-sqlite3': false,
       };
-      // Mark optional packages as externals so webpack doesn't try to bundle them
       const existing = config.externals ?? [];
       config.externals = [
         ...(Array.isArray(existing) ? existing : [existing]),
         '@vercel/blob',
-        'better-sqlite3',
       ];
     }
     return config;
