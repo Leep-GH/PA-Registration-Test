@@ -7,9 +7,9 @@ import PdpTable from '@/components/pdp-table';
 import SubscribeForm from '@/components/subscribe-form';
 
 export const metadata: Metadata = {
-  title: 'Registre PDP',
+  title: 'Registre PA',
   description:
-    'Liste complète des Plateformes de Dématérialisation Partenaires (PDP) certifiées DGFiP.',
+    'Liste complète des Plateformes Agréées (PA, ex-PDP) certifiées DGFiP pour la facturation électronique.',
 };
 
 // Revalidate every hour as a fallback; trigger-scrape calls revalidatePath('/') on success
@@ -36,7 +36,7 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          Registre des PDP — Plateformes de Dématérialisation Partenaires
+          Registre des Plateformes Agréées (PA, ex-PDP)
         </h1>
         <p className="mt-2 text-gray-600">
           Suivi du registre officiel DGFiP mis à jour quotidiennement.{' '}

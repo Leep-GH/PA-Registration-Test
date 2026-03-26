@@ -105,7 +105,7 @@ export default function PdpTable({ pdps }: Props) {
       </div>
 
       <p className="text-sm text-gray-500">
-        {filtered.length} plateforme{filtered.length !== 1 ? 's' : ''}
+        {filtered.length} plateforme{filtered.length !== 1 ? 's agréée' : ' agréée'}{filtered.length !== 1 ? 's' : ''}
       </p>
 
       {/* Table */}
@@ -140,7 +140,7 @@ export default function PdpTable({ pdps }: Props) {
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                  Aucune plateforme trouvée.
+                  Aucune plateforme agréée trouvée.
                 </td>
               </tr>
             ) : (

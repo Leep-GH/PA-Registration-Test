@@ -21,10 +21,10 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const pdp = await getPdpBySlug(params.slug).catch(() => null);
-  if (!pdp) return { title: 'PDP introuvable' };
+  if (!pdp) return { title: 'Plateforme introuvable' };
   return {
     title: pdp.name,
-    description: `Fiche détaillée et historique de ${pdp.name} — registre DGFiP des PDP.`,
+    description: `Fiche détaillée et historique de ${pdp.name} — registre DGFiP des Plateformes Agréées.`,
   };
 }
 

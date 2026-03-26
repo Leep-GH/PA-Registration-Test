@@ -5,7 +5,7 @@ import ChangeTimeline from '@/components/change-timeline';
 
 export const metadata: Metadata = {
   title: 'Historique des modifications',
-  description: "Historique complet des changements détectés dans le registre DGFiP des PDP.",
+  description: "Historique complet des changements détectés dans le registre DGFiP des Plateformes Agréées (ex-PDP).",
 };
 
 export const revalidate = 3600;
@@ -42,7 +42,7 @@ export default async function HistoriquePage({ searchParams }: Props) {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Historique des modifications</h1>
         <p className="mt-2 text-gray-600">
-          Toutes les modifications détectées dans le registre DGFiP depuis le démarrage du tracker.
+          Toutes les modifications détectées dans le registre DGFiP des Plateformes Agréées depuis le démarrage du tracker.
         </p>
       </div>
 

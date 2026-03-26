@@ -6,18 +6,18 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
 export const metadata: Metadata = {
   title: {
-    default: 'PDP Registry Tracker',
-    template: '%s | PDP Registry Tracker',
+    default: 'PA Registry Tracker',
+    template: '%s | PA Registry Tracker',
   },
   description:
-    'Suivi du registre officiel DGFiP des Plateformes de Dématérialisation Partenaires (PDP) pour la facturation électronique.',
+    'Suivi du registre officiel DGFiP des Plateformes Agréées (PA, ex-PDP) pour la facturation électronique.',
   metadataBase: new URL(appUrl),
   openGraph: {
-    title: 'PDP Registry Tracker',
+    title: 'PA Registry Tracker',
     description:
-      'Suivi en temps réel du registre officiel DGFiP des PDP (e-facturation).',
+      'Suivi en temps réel du registre officiel DGFiP des Plateformes Agréées (ex-PDP).',
     url: appUrl,
-    siteName: 'PDP Registry Tracker',
+    siteName: 'PA Registry Tracker',
     type: 'website',
   },
   alternates: {
@@ -38,7 +38,7 @@ export default function RootLayout({
         <link
           rel="alternate"
           type="application/rss+xml"
-          title="PDP Registry Tracker — Flux de modifications"
+          title="PA Registry Tracker — Flux de modifications"
           href={`${appUrl}/rss.xml`}
         />
       </head>
@@ -46,7 +46,7 @@ export default function RootLayout({
         <header className="bg-white border-b border-gray-200">
           <nav className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-6">
             <Link href="/" className="font-semibold text-gray-900 hover:text-blue-600">
-              PDP Tracker
+              PA Tracker
             </Link>
             <Link href="/" className="text-sm text-gray-600 hover:text-blue-600">
               Registre

@@ -37,9 +37,9 @@ function toRfc822(isoDate: string): string {
 function buildDescription(item: RssChangeItem): string {
   switch (item.eventType) {
     case 'added':
-      return `Nouvelle PDP immatriculée détectée : ${item.pdpName}`;
+      return `Nouvelle plateforme agréée (ex-PDP) détectée : ${item.pdpName}`;
     case 'removed':
-      return `PDP retirée du registre DGFiP : ${item.pdpName}`;
+      return `Plateforme agréée retirée du registre DGFiP : ${item.pdpName}`;
     case 'status_changed':
       return `Changement de statut détecté pour : ${item.pdpName}`;
     default:
@@ -79,9 +79,9 @@ export function buildRssFeed(changes: RssChangeItem[], baseUrl: string): string 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>PDP Registry Tracker — Flux de modifications</title>
+    <title>PA Registry Tracker — Flux de modifications</title>
     <link>${escapeXml(baseUrl)}</link>
-    <description>Dernières modifications du registre DGFiP des Plateformes de Dématérialisation Partenaires</description>
+    <description>Dernières modifications du registre DGFiP des Plateformes Agréées (ex-PDP)</description>
     <language>fr-FR</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
     <atom:link href="${escapeXml(baseUrl)}/rss.xml" rel="self" type="application/rss+xml" />

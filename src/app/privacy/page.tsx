@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Politique de confidentialité',
-  description: 'Politique de confidentialité et traitement des données personnelles du PDP Registry Tracker.',
+  description: 'Politique de confidentialité et traitement des données personnelles du PA Registry Tracker.',
 };
 
 export default function PrivacyPage() {
@@ -17,8 +17,8 @@ export default function PrivacyPage() {
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-gray-900">1. Qui sommes-nous ?</h2>
         <p className="text-gray-700">
-          PDP Registry Tracker est un service non officiel de surveillance du registre DGFiP
-          des Plateformes de Dématérialisation Partenaires. Il est disponible à l&apos;adresse{' '}
+          PA Registry Tracker est un service non officiel de surveillance du registre DGFiP
+          des Plateformes Agréées (ex-PDP, Plateformes de Dématérialisation Partenaires). Il est disponible à l&apos;adresse{' '}
           <a href={appUrl} className="text-blue-600 hover:underline">
             {appUrl}
           </a>.
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
         <h2 className="text-lg font-semibold text-gray-900">3. Finalité du traitement</h2>
         <p className="text-gray-700">
           Les adresses e-mail sont utilisées <strong>exclusivement</strong> pour vous envoyer des
-          alertes lorsque des modifications sont détectées dans le registre DGFiP des PDP. Elles
+          alertes lorsque des modifications sont détectées dans le registre DGFiP des Plateformes Agréées (ex-PDP). Elles
           ne sont jamais partagées, vendues ou utilisées à des fins commerciales.
         </p>
       </section>
