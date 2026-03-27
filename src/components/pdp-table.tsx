@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/components/language-provider';
+import { t, type Language } from '@/lib/i18n';
 import type { Pdp } from '@/lib/db/schema';
 
 type SortKey = 'name' | 'status' | 'registrationDate' | 'firstSeenAt';
@@ -9,12 +11,6 @@ type SortDir = 'asc' | 'desc';
 type StatusFilter = 'all' | 'registered' | 'candidate' | 'removed';
 
 const PAGE_SIZE = 25;
-
-const STATUS_LABELS: Record<string, string> = {
-  registered: 'Immatriculée',
-  candidate: 'Candidate',
-  removed: 'Retirée',
-};
 
 const STATUS_BADGE: Record<string, string> = {
   registered: 'status-badge-registered',
@@ -27,6 +23,7 @@ interface Props {
 }
 
 export default function PdpTable({ pdps }: Props) {
+  const { language } = useLanguage();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -103,6 +100,13 @@ export default function PdpTable({ pdps }: Props) {
     return <span className="ml-1 text-accent">{sortDir === 'asc' ? '↑' : '↓'}</span>;
   }
 
+  function getStatusLabel(status: string): string {
+    if (status === 'registered') return t(language, 'statusRegistered');
+    if (status === 'candidate') return t(language, 'statusCandidate');
+    if (status === 'removed') return t(language, 'statusRemoved');
+    return status;
+  }
+
   return (
     <div className="space-y-4">
       {/* Controls */}
@@ -118,13 +122,13 @@ export default function PdpTable({ pdps }: Props) {
                   : 'text-navy/55 hover:text-navy'
               }`}
             >
-              {s === 'all' ? 'Tous' : STATUS_LABELS[s] ?? s}
+              {s === 'all' ? t(language, 'tableStatusFilter') : getStatusLabel(s)}
             </button>
           ))}
         </div>
         <input
           type="search"
-          placeholder="Rechercher…"
+          placeholder={t(language, 'tableSearch')}
           value={search}
           onChange={(e) => changeSearch(e.target.value)}
           className="ml-auto border border-navy/15 bg-cream rounded px-3 py-1.5 text-sm font-body focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent placeholder:text-navy/30"
@@ -132,7 +136,7 @@ export default function PdpTable({ pdps }: Props) {
       </div>
 
       <p className="text-xs font-mono text-navy/40 uppercase tracking-wider">
-        {filtered.length} plateforme{filtered.length !== 1 ? 's agréée' : ' agréée'}{filtered.length !== 1 ? 's' : ''}
+        {t(language, 'tablePlatforms', filtered.length)}
       </p>
 
       {/* Table */}
@@ -142,11 +146,11 @@ export default function PdpTable({ pdps }: Props) {
             <tr className="border-b-2 border-navy/10">
               {(
                 [
-                  { key: 'name' as SortKey, label: 'Nom' },
-                  { key: 'status' as SortKey, label: 'Statut' },
-                  { key: 'registrationDate' as SortKey, label: 'Date' },
-                  { key: null, label: 'Site web' },
-                  { key: 'firstSeenAt' as SortKey, label: 'Première obs.' },
+                  { key: 'name' as SortKey, label: t(language, 'tableColName') },
+                  { key: 'status' as SortKey, label: t(language, 'tableColStatus') },
+                  { key: 'registrationDate' as SortKey, label: t(language, 'tableColDate') },
+                  { key: null, label: t(language, 'tableColWebsite') },
+                  { key: 'firstSeenAt' as SortKey, label: t(language, 'tableColFirstSeen') },
                 ] as { key: SortKey | null; label: string }[]
               ).map(({ key, label }) => (
                 <th
@@ -169,7 +173,7 @@ export default function PdpTable({ pdps }: Props) {
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-3 py-8 text-center text-navy/40 font-body">
-                  Aucune plateforme agréée trouvée.
+                  {t(language, 'tableNoResults')}
                 </td>
               </tr>
             ) : (
@@ -189,7 +193,7 @@ export default function PdpTable({ pdps }: Props) {
                         STATUS_BADGE[pdp.status] ?? 'status-badge border-l-gray-400 text-gray-600'
                       }
                     >
-                      {STATUS_LABELS[pdp.status] ?? pdp.status}
+                      {getStatusLabel(pdp.status)}
                     </span>
                   </td>
                   <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
@@ -227,17 +231,17 @@ export default function PdpTable({ pdps }: Props) {
             disabled={safePage === 1}
             className="px-4 py-2 text-sm font-body font-medium text-navy/70 border border-navy/15 rounded hover:border-navy/35 hover:text-navy disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
-            ← Précédent
+            {t(language, 'paginationPrevious')}
           </button>
           <span className="text-xs font-mono text-navy/50 uppercase tracking-wider">
-            Page {safePage} / {totalPages}
+            {t(language, 'paginationPage', safePage, totalPages)}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={safePage === totalPages}
             className="px-4 py-2 text-sm font-body font-medium text-navy/70 border border-navy/15 rounded hover:border-navy/35 hover:text-navy disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
-            Suivant →
+            {t(language, 'paginationNext')}
           </button>
         </div>
       )}

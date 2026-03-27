@@ -1,3 +1,8 @@
+'use client';
+
+import { useLanguage } from '@/components/language-provider';
+import { t } from '@/lib/i18n';
+
 interface Props {
   registeredCount: number;
   candidateCount: number;
@@ -6,15 +11,17 @@ interface Props {
 }
 
 export default function StatsBar({ registeredCount, candidateCount, addedThisMonth, removedThisMonth }: Props) {
+  const { language } = useLanguage();
+
   return (
     <div className="flex items-baseline gap-8 sm:gap-12 overflow-x-auto py-2">
-      <Stat value={registeredCount} label="Immatriculées" accent />
+      <Stat value={registeredCount} label={t(language, 'statsRegistered')} accent />
       <div className="w-px h-8 bg-navy/10 flex-shrink-0" />
-      <Stat value={candidateCount} label="Candidates" />
+      <Stat value={candidateCount} label={t(language, 'statsCandidate')} />
       <div className="w-px h-8 bg-navy/10 flex-shrink-0" />
-      <Stat value={addedThisMonth} label="Ajouts (30j)" />
+      <Stat value={addedThisMonth} label={t(language, 'statsAdded')} />
       <div className="w-px h-8 bg-navy/10 flex-shrink-0" />
-      <Stat value={removedThisMonth} label="Retraits (30j)" />
+      <Stat value={removedThisMonth} label={t(language, 'statsRemoved')} />
     </div>
   );
 }
