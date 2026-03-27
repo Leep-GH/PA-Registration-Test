@@ -19,13 +19,13 @@ export const translations = {
     statsRegistered: 'Registered',
     statsCandidate: 'Candidate',
     statsAdded: 'Added this month',
-    statsRemoved: 'Removed this month',
+    statsRemoved: 'Withdrawn this month',
     statsNotEnoughData: 'Not enough data yet — check back after the first weekly cycle',
     
     // Table
     statusRegistered: 'Registered',
     statusCandidate: 'Candidate',
-    statusRemoved: 'Removed',
+    statusRemoved: 'Withdrawn',
     tableStatusFilter: 'All',
     tableSearch: 'Search…',
     tableColName: 'Name',
@@ -36,7 +36,7 @@ export const translations = {
     tooltipFirstTracked: 'The date this platform was first detected by this tracker',
     tableNoResults: 'No approved platforms found.',
     tablePlatforms: (count: number) =>
-      `${count} platform${count !== 1 ? 's' : ''} approved`,
+      `${count} platform${count !== 1 ? 's' : ''} tracked`,
     
     // Pagination
     paginationPrevious: '← Previous',
@@ -96,7 +96,7 @@ export const translations = {
     tooltipFirstTracked: 'La date de la première détection de cette plateforme par ce suivi',
     tableNoResults: 'Aucune plateforme agréée trouvée.',
     tablePlatforms: (count: number) =>
-      `${count} plateforme${count !== 1 ? 's agréée' : ' agréée'}${count !== 1 ? 's' : ''}`,
+      `${count} plateforme${count !== 1 ? ' suivie' : ' suivie'}${count !== 1 ? 's' : ''}`,
     
     // Pagination
     paginationPrevious: '← Précédent',
