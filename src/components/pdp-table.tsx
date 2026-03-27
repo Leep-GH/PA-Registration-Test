@@ -29,6 +29,7 @@ export default function PdpTable({ pdps }: Props) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [hoveredHeader, setHoveredHeader] = useState<string | null>(null);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
@@ -155,13 +156,20 @@ export default function PdpTable({ pdps }: Props) {
               ).map(({ key, label }) => (
                 <th
                   key={label}
-                  className={`px-3 py-2.5 text-left text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest whitespace-nowrap ${
+                  className={`relative px-3 py-2.5 text-left text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest whitespace-nowrap ${
                     key ? 'cursor-pointer hover:text-navy select-none' : ''
                   }`}
                   onClick={() => key && handleSort(key)}
+                  onMouseEnter={() => key === 'firstSeenAt' && setHoveredHeader('firstSeenAt')}
+                  onMouseLeave={() => setHoveredHeader(null)}
                 >
                   {label}
                   {key && <SortArrow col={key} />}
+                  {key === 'firstSeenAt' && hoveredHeader === 'firstSeenAt' && (
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-navy text-cream text-[10px] font-normal whitespace-nowrap rounded z-10 pointer-events-none">
+                      {t(language, 'tooltipFirstTracked')}
+                    </div>
+                  )}
                 </th>
               ))}
             </tr>
