@@ -28,11 +28,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('language', lang);
   };
 
-  // Avoid hydration mismatch by not rendering until mounted
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
   return (
     <LanguageContext.Provider value={{ language, setLanguage }}>
       {children}
@@ -43,8 +38,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (!context) {
-    // Return default during SSR/static generation
-    return { language: 'en' as Language, setLanguage: () => {} };
+    throw new Error('useLanguage must be used within LanguageProvider');
   }
   return context;
 }
