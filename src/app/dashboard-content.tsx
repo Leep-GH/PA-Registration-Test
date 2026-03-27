@@ -4,7 +4,6 @@ import { useLanguage } from '@/components/language-provider';
 import { t } from '@/lib/i18n';
 import StatsBar from '@/components/stats-bar';
 import PdpTable from '@/components/pdp-table';
-import SubscribeForm from '@/components/subscribe-form';
 import type { Pdp } from '@/lib/db/schema';
 
 interface DashboardContentProps {
@@ -65,13 +64,6 @@ export default function DashboardContent({
       <div className="hr-rule" />
 
       <PdpTable pdps={pdps} />
-
-      <div className="hr-rule pt-10">
-        <h2 className="font-display text-xl text-navy mb-4">
-          {t(language, 'newsletterTitle')}
-        </h2>
-        <SubscribeForm />
-      </div>
     </div>
   );
 }
