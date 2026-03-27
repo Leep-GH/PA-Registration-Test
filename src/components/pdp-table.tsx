@@ -60,8 +60,7 @@ export default function PdpTable({ pdps }: Props) {
         const q = search.toLowerCase();
         return (
           p.name.toLowerCase().includes(q) ||
-          p.slug.includes(q) ||
-          (p.registrationNumber?.toLowerCase().includes(q) ?? false)
+          p.slug.includes(q)
         );
       }
       return true;
@@ -135,7 +134,6 @@ export default function PdpTable({ pdps }: Props) {
                 [
                   { key: 'name' as SortKey, label: 'Nom' },
                   { key: 'status' as SortKey, label: 'Statut' },
-                  { key: null, label: 'N° immatriculation' },
                   { key: 'registrationDate' as SortKey, label: 'Date' },
                   { key: null, label: 'Site web' },
                   { key: 'firstSeenAt' as SortKey, label: 'Première obs.' },
@@ -157,7 +155,7 @@ export default function PdpTable({ pdps }: Props) {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-3 py-8 text-center text-navy/40 font-body">
+                <td colSpan={5} className="px-3 py-8 text-center text-navy/40 font-body">
                   Aucune plateforme agréée trouvée.
                 </td>
               </tr>
@@ -180,9 +178,6 @@ export default function PdpTable({ pdps }: Props) {
                     >
                       {STATUS_LABELS[pdp.status] ?? pdp.status}
                     </span>
-                  </td>
-                  <td className="px-3 py-2.5 font-mono text-xs text-navy/50">
-                    {pdp.registrationNumber ?? '—'}
                   </td>
                   <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
                     {pdp.registrationDate ?? '—'}
