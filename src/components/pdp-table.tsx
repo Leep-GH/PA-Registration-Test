@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import type { Pdp } from '@/lib/db/schema';
 
@@ -53,40 +53,50 @@ export default function PdpTable({ pdps }: Props) {
     setPage(1);
   }
 
-  const filtered = pdps
-    .filter((p) => {
-      if (statusFilter !== 'all' && p.status !== statusFilter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        return (
-          p.name.toLowerCase().includes(q) ||
-          p.slug.includes(q)
-        );
-      }
-      return true;
-    })
-    .sort((a, b) => {
-      let cmp = 0;
-      switch (sortKey) {
-        case 'name':
-          cmp = a.name.localeCompare(b.name, 'fr');
-          break;
-        case 'status':
-          cmp = a.status.localeCompare(b.status);
-          break;
-        case 'registrationDate':
-          cmp = (a.registrationDate ?? '').localeCompare(b.registrationDate ?? '');
-          break;
-        case 'firstSeenAt':
-          cmp = a.firstSeenAt.localeCompare(b.firstSeenAt);
-          break;
-      }
-      return sortDir === 'asc' ? cmp : -cmp;
-    });
+  const filtered = useMemo(() => {
+    return pdps
+      .filter((p) => {
+        if (statusFilter !== 'all' && p.status !== statusFilter) return false;
+        if (search) {
+          const q = search.toLowerCase();
+          return (
+            p.name.toLowerCase().includes(q) ||
+            p.slug.includes(q)
+          );
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        let cmp = 0;
+        switch (sortKey) {
+          case 'name':
+            cmp = a.name.localeCompare(b.name, 'fr');
+            break;
+          case 'status':
+            cmp = a.status.localeCompare(b.status);
+            break;
+          case 'registrationDate':
+            cmp = (a.registrationDate ?? '').localeCompare(b.registrationDate ?? '');
+            break;
+          case 'firstSeenAt':
+            cmp = a.firstSeenAt.localeCompare(b.firstSeenAt);
+            break;
+        }
+        return sortDir === 'asc' ? cmp : -cmp;
+      });
+  }, [pdps, statusFilter, search, sortKey, sortDir]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  }, [filtered.length]);
+
+  const safePage = useMemo(() => {
+    return Math.min(page, totalPages);
+  }, [page, totalPages]);
+
+  const paginated = useMemo(() => {
+    return filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  }, [filtered, safePage]);
 
   function SortArrow({ col }: { col: SortKey }) {
     if (sortKey !== col) return <span className="ml-1 text-navy/15">↕</span>;
@@ -152,7 +162,10 @@ export default function PdpTable({ pdps }: Props) {
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody
+            key={`page-${safePage}`}
+            className="transition-opacity duration-150 ease-in-out"
+          >
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-3 py-8 text-center text-navy/40 font-body">
