@@ -22,7 +22,7 @@ export default function DashboardContent({
   const { language } = useLanguage();
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
       <div>
         <h1 className="font-display text-3xl sm:text-4xl text-navy">
           {t(language, 'pageTitle')}
@@ -54,8 +54,6 @@ export default function DashboardContent({
         registeredCount={registeredCount}
         candidateCount={candidateCount}
       />
-
-      <div className="hr-rule" />
 
       <PdpTable pdps={pdps} />
     </div>
