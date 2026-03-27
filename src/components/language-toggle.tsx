@@ -12,7 +12,7 @@ export default function LanguageToggle() {
         className={`px-3 py-1.5 text-xs font-body font-medium uppercase tracking-wider rounded transition-colors ${
           language === 'en'
             ? 'text-accent border border-accent/70 bg-accent/10'
-            : 'text-cream/70 border border-cream/20 hover:text-cream'
+            : 'text-cream/80 border border-cream/20 hover:text-cream'
         }`}
       >
         EN
@@ -22,7 +22,7 @@ export default function LanguageToggle() {
         className={`px-3 py-1.5 text-xs font-body font-medium uppercase tracking-wider rounded transition-colors ${
           language === 'fr'
             ? 'text-accent border border-accent/70 bg-accent/10'
-            : 'text-cream/70 border border-cream/20 hover:text-cream'
+            : 'text-cream/80 border border-cream/20 hover:text-cream'
         }`}
       >
         FR

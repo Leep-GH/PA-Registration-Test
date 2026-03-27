@@ -60,16 +60,16 @@ export default function RootLayout({
                   Registry{' '}
                   <span className="text-accent">PA</span>
                 </span>
-                <span className="block text-cream/50 text-[11px] font-body uppercase tracking-[0.3em] mt-1.5">
+                <span className="block text-cream/75 text-[11px] font-body uppercase tracking-[0.3em] mt-1.5">
                   Approved Platforms · DGFiP Registry
                 </span>
               </Link>
             </div>
             <nav className="max-w-5xl mx-auto px-4 pb-4 flex items-center gap-5 text-sm font-body">
-              <Link href="/" className="text-cream/70 hover:text-cream transition-colors">
+              <Link href="/" className="text-cream/80 hover:text-cream transition-colors">
                 Registry
               </Link>
-              <Link href="/historique" className="text-cream/70 hover:text-cream transition-colors">
+              <Link href="/historique" className="text-cream/80 hover:text-cream transition-colors">
                 History
               </Link>
               <LanguageToggle />
