@@ -1,6 +1,7 @@
 'use client';
 
 import type { ChangeEvent } from '@/lib/db/schema';
+import { useLanguage } from '@/components/language-provider';
 
 interface ChangeEventWithPdp extends ChangeEvent {
   pdpName: string;
@@ -11,10 +12,19 @@ interface Props {
   changes: ChangeEventWithPdp[];
 }
 
-const EVENT_LABELS: Record<string, { label: string; badgeClass: string }> = {
-  added: { label: 'Ajouté', badgeClass: 'status-badge-registered' },
-  removed: { label: 'Retiré', badgeClass: 'status-badge-removed' },
-  status_changed: { label: 'Modifié', badgeClass: 'status-badge-candidate' },
+const EVENT_LABELS: Record<string, Record<'en' | 'fr', { label: string; badgeClass: string }>> = {
+  added: {
+    en: { label: 'Added', badgeClass: 'status-badge-registered' },
+    fr: { label: 'Ajouté', badgeClass: 'status-badge-registered' },
+  },
+  removed: {
+    en: { label: 'Removed', badgeClass: 'status-badge-removed' },
+    fr: { label: 'Retiré', badgeClass: 'status-badge-removed' },
+  },
+  status_changed: {
+    en: { label: 'Modified', badgeClass: 'status-badge-candidate' },
+    fr: { label: 'Modifié', badgeClass: 'status-badge-candidate' },
+  },
 };
 
 const BORDER_COLOURS: Record<string, string> = {
@@ -33,8 +43,8 @@ function groupByDate(changes: ChangeEventWithPdp[]): Map<string, ChangeEventWith
   return groups;
 }
 
-function formatDate(isoDate: string): string {
-  return new Date(isoDate).toLocaleDateString('fr-FR', {
+function formatDate(isoDate: string, locale: string): string {
+  return new Date(isoDate).toLocaleDateString(locale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -42,10 +52,15 @@ function formatDate(isoDate: string): string {
 }
 
 export default function ChangeTimeline({ changes }: Props) {
+  const { language } = useLanguage();
+  const locale = language === 'fr' ? 'fr-FR' : 'en-GB';
+
   if (changes.length === 0) {
     return (
       <div className="text-center py-12 text-navy/40 border border-dashed border-navy/10 rounded font-body">
-        Aucun changement détecté depuis le lancement du tracker.
+        {language === 'fr'
+          ? 'Aucun changement détecté depuis le lancement du tracker.'
+          : 'No changes detected since tracker launch.'}
       </div>
     );
   }
@@ -57,11 +72,11 @@ export default function ChangeTimeline({ changes }: Props) {
       {Array.from(groups.entries()).map(([date, events]) => (
         <div key={date}>
           <h2 className="text-xs font-mono font-medium text-navy/40 uppercase tracking-[0.2em] mb-4">
-            {formatDate(date)}
+            {formatDate(date, locale)}
           </h2>
           <div className="space-y-2">
             {events.map((event) => {
-              const meta = EVENT_LABELS[event.eventType] ?? EVENT_LABELS.status_changed;
+              const meta = (EVENT_LABELS[event.eventType] ?? EVENT_LABELS.status_changed)[language];
               const borderColour = BORDER_COLOURS[event.eventType] ?? 'border-l-gray-300';
               const oldVal = event.oldValue ? JSON.parse(event.oldValue) : null;
               const newVal = event.newValue ? JSON.parse(event.newValue) : null;
@@ -88,7 +103,7 @@ export default function ChangeTimeline({ changes }: Props) {
                     )}
                   </div>
                   <time className="text-[10px] font-mono text-navy/30 whitespace-nowrap uppercase tracking-wider">
-                    {new Date(event.detectedAt).toLocaleTimeString('fr-FR', {
+                    {new Date(event.detectedAt).toLocaleTimeString(locale, {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}

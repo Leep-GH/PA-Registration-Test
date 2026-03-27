@@ -69,6 +69,16 @@ export default function HistoryContent({ total, changes, eventType, pageNum, tot
         <div className="hr-rule mt-6" />
       </div>
 
+      {/* Tracking-start notice */}
+      <div className="flex items-start gap-2 px-4 py-3 bg-navy/[0.03] border border-navy/10 rounded text-xs font-body text-navy/55">
+        <span className="mt-0.5 text-navy/30">ℹ</span>
+        <span>
+          {language === 'en'
+            ? 'Tracking started 26 March 2026 — changes shown from 27 March onwards.'
+            : 'Le suivi a démarré le 26 mars 2026 — les modifications sont affichées à partir du 27 mars.'}
+        </span>
+      </div>
+
       {/* Filters */}
       <div className="flex flex-wrap gap-2 items-center">
         <span className="text-xs font-body text-navy/40 uppercase tracking-wide mr-1">{labels.filter}</span>

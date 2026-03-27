@@ -30,6 +30,7 @@ export default async function HistoriquePage({ searchParams }: Props) {
 
   const { total, changes } = await getChanges({
     type: eventType,
+    since: '2026-03-27',
     limit: PAGE_SIZE,
     offset,
   }).catch(() => ({ total: 0, changes: [] }));
