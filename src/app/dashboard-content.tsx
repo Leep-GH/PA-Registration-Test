@@ -11,8 +11,6 @@ interface DashboardContentProps {
   lastRun: { runAt: string } | null;
   registeredCount: number;
   candidateCount: number;
-  addedThisMonth: number | null;
-  removedThisMonth: number | null;
 }
 
 export default function DashboardContent({
@@ -20,8 +18,6 @@ export default function DashboardContent({
   lastRun,
   registeredCount,
   candidateCount,
-  addedThisMonth,
-  removedThisMonth,
 }: DashboardContentProps) {
   const { language } = useLanguage();
 
@@ -57,8 +53,6 @@ export default function DashboardContent({
       <StatsBar
         registeredCount={registeredCount}
         candidateCount={candidateCount}
-        addedThisMonth={addedThisMonth}
-        removedThisMonth={removedThisMonth}
       />
 
       <div className="hr-rule" />
