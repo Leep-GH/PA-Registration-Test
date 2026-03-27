@@ -10,7 +10,7 @@
 
 import { appendFile } from 'fs/promises';
 import { resolve } from 'path';
-import type { NotificationService, ChangeEventSummary } from './interface';
+import type { NotificationService, ChangeEventSummary, ChangeAlertRecipient } from './interface';
 
 const LOG_FILE = resolve('./notifications.log');
 
@@ -26,7 +26,7 @@ async function appendLog(entry: object): Promise<void> {
 export class ConsoleSink implements NotificationService {
   async sendChangeAlert(
     changes: ChangeEventSummary[],
-    recipients: string[],
+    recipients: ChangeAlertRecipient[],
   ): Promise<void> {
     const summary = changes.map((c) => ({
       pdp: c.pdpName,
@@ -42,6 +42,8 @@ export class ConsoleSink implements NotificationService {
     };
     console.log('[NOTIFICATION] Change alert', JSON.stringify(entry, null, 2));
     await appendLog(entry);
+    // Note: Unsubscribe URLs are not logged to preserve PII separation
+    void recipients; // intentionally unused
   }
 
   async sendAdminAlert(subject: string, body: string): Promise<void> {

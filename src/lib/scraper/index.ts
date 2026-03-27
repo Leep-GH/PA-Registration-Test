@@ -19,7 +19,7 @@ import {
 } from '@/lib/db/repositories/pdps';
 import { insertChangeEvent } from '@/lib/db/repositories/changes';
 import { insertRun, updateRun } from '@/lib/db/repositories/runs';
-import { getConfirmedSubscribers, purgeUnconfirmed } from '@/lib/db/repositories/subscribers';
+import { getConfirmedSubscribers, getConfirmedSubscribersWithTokens, purgeUnconfirmed } from '@/lib/db/repositories/subscribers';
 import { getNotificationService } from '@/lib/notifications/console';
 import { logger } from '@/lib/logger';
 import type { PdpRecord } from './types';
@@ -121,8 +121,13 @@ export async function runScrape(): Promise<ScrapeOutcome> {
     if (diffs.length > 0) {
       try {
         const notif = getNotificationService();
-        const recipientEmails = await getConfirmedSubscribers();
-        if (recipientEmails.length > 0) {
+        const subscriberTokens = await getConfirmedSubscribersWithTokens();
+        if (subscriberTokens.length > 0) {
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+          const recipients = subscriberTokens.map((sub) => ({
+            email: sub.email,
+            unsubscribeUrl: `${appUrl}/api/unsubscribe?token=${sub.token}`,
+          }));
           await notif.sendChangeAlert(
             diffs.map((d) => ({
               pdpName: d.pdpSlug,
@@ -136,7 +141,7 @@ export async function runScrape(): Promise<ScrapeOutcome> {
                   ? String((d.newValue as Record<string, unknown>).status)
                   : undefined,
             })),
-            recipientEmails,
+            recipients,
           );
         }
       } catch (notifError) {

@@ -7,7 +7,7 @@ vi.mock('fs/promises', () => ({
 
 import { appendFile } from 'fs/promises';
 import { ConsoleSink, getNotificationService } from '@/lib/notifications/console';
-import type { ChangeEventSummary } from '@/lib/notifications/interface';
+import type { ChangeEventSummary, ChangeAlertRecipient } from '@/lib/notifications/interface';
 
 beforeEach(() => {
   vi.mocked(appendFile).mockResolvedValue(undefined);
@@ -30,8 +30,11 @@ describe('ConsoleSink', () => {
       { pdpName: 'Entreprise Alpha', eventType: 'added' },
       { pdpName: 'Société Bêta', eventType: 'removed', oldStatus: 'registered' },
     ];
+    const recipients: ChangeAlertRecipient[] = [
+      { email: 'subscriber@example.com', unsubscribeUrl: 'http://localhost:3000/api/unsubscribe?token=abc123' },
+    ];
 
-    await sink.sendChangeAlert(changes, ['subscriber@example.com']);
+    await sink.sendChangeAlert(changes, recipients);
 
     expect(spy).toHaveBeenCalledOnce();
     expect(spy.mock.calls[0][0]).toContain('[NOTIFICATION]');
@@ -48,8 +51,11 @@ describe('ConsoleSink', () => {
         newStatus: 'registered',
       },
     ];
+    const recipients: ChangeAlertRecipient[] = [
+      { email: 'subscriber@example.com', unsubscribeUrl: 'http://localhost:3000/api/unsubscribe?token=xyz789' },
+    ];
 
-    await sink.sendChangeAlert(changes, ['subscriber@example.com']);
+    await sink.sendChangeAlert(changes, recipients);
 
     const logFileContent = vi.mocked(appendFile).mock.calls[0][1] as string;
     const parsed = JSON.parse(logFileContent) as Record<string, unknown>;
@@ -64,8 +70,11 @@ describe('ConsoleSink', () => {
     const changes: ChangeEventSummary[] = [
       { pdpName: 'Entreprise Alpha', eventType: 'added' },
     ];
+    const recipients: ChangeAlertRecipient[] = [
+      { email: 'subscriber@example.com', unsubscribeUrl: 'http://localhost:3000/api/unsubscribe?token=test123' },
+    ];
 
-    await sink.sendChangeAlert(changes, ['subscriber@example.com']);
+    await sink.sendChangeAlert(changes, recipients);
 
     expect(vi.mocked(appendFile)).toHaveBeenCalledOnce();
     const [_path, content] = vi.mocked(appendFile).mock.calls[0] as [string, string, string];
@@ -77,11 +86,15 @@ describe('ConsoleSink', () => {
     const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const recipientEmail = 'private@example.com';
     const changes: ChangeEventSummary[] = [{ pdpName: 'PDP X', eventType: 'added' }];
+    const recipients: ChangeAlertRecipient[] = [
+      { email: recipientEmail, unsubscribeUrl: 'http://localhost:3000/api/unsubscribe?token=secret' },
+    ];
 
-    await sink.sendChangeAlert(changes, [recipientEmail]);
+    await sink.sendChangeAlert(changes, recipients);
 
     // PII (email address) must never appear in logs
     const logOutput = spy.mock.calls[0].map(String).join(' ');
+    // Email must not be logged; unsubscribeUrl may be logged by the provider (not ConsoleSink)
     expect(logOutput).not.toContain(recipientEmail);
   });
 

@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { confirmSubscriber } from '@/lib/db/repositories/subscribers';
+import { confirmSubscriber, getEmailByToken } from '@/lib/db/repositories/subscribers';
 import { getNotificationService } from '@/lib/notifications/console';
 import { logger } from '@/lib/logger';
 
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   if (confirmedEmail !== null) {
     logger.info('Subscription confirmed via token');
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
-    // Send welcome email — email used internally only, never logged or returned to client
+    // Send welcome email — email looked up by token to ensure correct delivery
     getNotificationService()
       .sendWelcomeEmail(
         confirmedEmail,

@@ -9,6 +9,11 @@ export interface ChangeEventSummary {
   newStatus?: string;
 }
 
+export interface ChangeAlertRecipient {
+  email: string;
+  unsubscribeUrl: string;
+}
+
 /**
  * Provider-agnostic notification interface.
  * v1 is implemented by ConsoleSink (logs to stdout).
@@ -17,12 +22,13 @@ export interface ChangeEventSummary {
  */
 export interface NotificationService {
   /**
-   * Sends a change-detection digest to the given list of subscriber emails.
-   * Never logs the recipients list — it contains PII.
+   * Sends a change-detection digest to the given list of subscribers.
+   * Each recipient includes their email and unsubscribe URL.
+   * Never logs the recipient email addresses — they contain PII.
    */
   sendChangeAlert(
     changes: ChangeEventSummary[],
-    recipients: string[],
+    recipients: ChangeAlertRecipient[],
   ): Promise<void>;
 
   /**

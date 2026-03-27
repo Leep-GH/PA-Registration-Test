@@ -84,6 +84,20 @@ export async function getConfirmedSubscribers(): Promise<string[]> {
   return rows.map((r) => r.email);
 }
 
+/** Returns email addresses and tokens of all confirmed, non-unsubscribed subscribers.
+ * Used to build personalized unsubscribe links for alert emails.
+ * Email addresses are never logged — tokens only.
+ */
+export async function getConfirmedSubscribersWithTokens(): Promise<Array<{ email: string; token: string }>> {
+  const db = getDb();
+  const rows = await db
+    .select({ email: subscribers.email, token: subscribers.token })
+    .from(subscribers)
+    .where(and(eq(subscribers.confirmed, true), isNull(subscribers.unsubscribedAt)))
+    ;
+  return rows;
+}
+
 /** Returns true if an email exists and is confirmed (used for 409 check). */
 export async function isEmailConfirmed(email: string): Promise<boolean> {
   const db = getDb();
@@ -155,6 +169,17 @@ export async function getPendingToken(email: string): Promise<string | null> {
     )
     ;
   return rows[0]?.token ?? null;
+}
+
+/** Returns the email address for a subscriber by token. Used after confirmation to send welcome email. */
+export async function getEmailByToken(token: string): Promise<string | null> {
+  const db = getDb();
+  const rows = await db
+    .select({ email: subscribers.email })
+    .from(subscribers)
+    .where(eq(subscribers.token, token))
+    ;
+  return rows[0]?.email ?? null;
 }
 
 /** Returns rough subscriber count (for admin monitoring; no PII). */
