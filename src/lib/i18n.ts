@@ -37,6 +37,8 @@ export const translations = {
     tableNoResults: 'No approved platforms found.',
     tablePlatforms: (count: number) =>
       `${count} platform${count !== 1 ? 's' : ''} tracked`,
+    tablePlatformsApproved: (count: number) =>
+      `${count} platform${count !== 1 ? 's' : ''} approved`,
     
     // Pagination
     paginationPrevious: '← Previous',
@@ -97,6 +99,8 @@ export const translations = {
     tableNoResults: 'Aucune plateforme agréée trouvée.',
     tablePlatforms: (count: number) =>
       `${count} plateforme${count !== 1 ? ' suivie' : ' suivie'}${count !== 1 ? 's' : ''}`,
+    tablePlatformsApproved: (count: number) =>
+      `${count} plateforme${count !== 1 ? ' agréée' : ' agréée'}${count !== 1 ? 's' : ''}`,
     
     // Pagination
     paginationPrevious: '← Précédent',

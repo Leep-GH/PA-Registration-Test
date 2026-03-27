@@ -137,7 +137,7 @@ export default function PdpTable({ pdps }: Props) {
       </div>
 
       <p className="text-xs font-mono text-navy/40 uppercase tracking-wider">
-        {t(language, 'tablePlatforms', filtered.length)}
+        {t(language, statusFilter === 'registered' ? 'tablePlatformsApproved' : 'tablePlatforms', filtered.length)}
       </p>
 
       {/* Table */}
