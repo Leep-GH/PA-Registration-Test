@@ -37,17 +37,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
+        />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
         <link
           href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
           rel="stylesheet"
-        />
-        <link
-          rel="alternate"
-          type="application/rss+xml"
-          title="PA Registry Tracker — Change Stream"
-          href={`${appUrl}/rss.xml`}
         />
       </head>
       <body className="min-h-screen bg-cream text-navy">
@@ -71,12 +72,6 @@ export default function RootLayout({
               <Link href="/historique" className="text-cream/70 hover:text-cream transition-colors">
                 History
               </Link>
-              <a
-                href="/rss.xml"
-                className="text-cream/40 hover:text-cream transition-colors text-xs font-mono uppercase tracking-wider"
-              >
-                RSS
-              </a>
               <LanguageToggle />
             </nav>
             <div className="h-px bg-gradient-to-r from-accent via-accent/60 to-transparent" />
