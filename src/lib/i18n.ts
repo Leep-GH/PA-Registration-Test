@@ -20,6 +20,7 @@ export const translations = {
     statsCandidate: 'Candidate',
     statsAdded: 'Added this month',
     statsRemoved: 'Removed this month',
+    statsNotEnoughData: 'Not enough data yet — check back after the first weekly cycle',
     
     // Table
     statusRegistered: 'Registered',
@@ -79,6 +80,7 @@ export const translations = {
     statsCandidate: 'Candidate',
     statsAdded: 'Ajoutée ce mois-ci',
     statsRemoved: 'Retirée ce mois-ci',
+    statsNotEnoughData: 'Données insuffisantes — revenez après le premier cycle hebdomadaire',
     
     // Table
     statusRegistered: 'Immatriculée',

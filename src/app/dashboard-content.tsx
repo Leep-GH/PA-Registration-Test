@@ -12,8 +12,8 @@ interface DashboardContentProps {
   lastRun: { runAt: string } | null;
   registeredCount: number;
   candidateCount: number;
-  addedThisMonth: number;
-  removedThisMonth: number;
+  addedThisMonth: number | null;
+  removedThisMonth: number | null;
 }
 
 export default function DashboardContent({

@@ -81,6 +81,21 @@ export async function isRunInProgress(): Promise<boolean> {
   return rows.length > 0;
 }
 
+/** Returns the first successful run (oldest completed run). */
+export async function getFirstRun(): Promise<ScrapeRun | null> {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(scrapeRuns)
+    .where(
+      sql`${scrapeRuns.status} in ('success', 'no_change')`,
+    )
+    .orderBy(sql`${scrapeRuns.id} asc`)
+    .limit(1)
+    ;
+  return rows[0] ?? null;
+}
+
 /** Returns the last N runs (for display/debugging). */
 export async function getRecentRuns(limit = 10): Promise<ScrapeRun[]> {
   const db = getDb();
