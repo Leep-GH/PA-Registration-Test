@@ -8,6 +8,8 @@ type SortKey = 'name' | 'status' | 'registrationDate' | 'firstSeenAt';
 type SortDir = 'asc' | 'desc';
 type StatusFilter = 'all' | 'registered' | 'candidate' | 'removed';
 
+const PAGE_SIZE = 25;
+
 const STATUS_LABELS: Record<string, string> = {
   registered: 'Immatriculée',
   candidate: 'Candidate',
@@ -29,6 +31,7 @@ export default function PdpTable({ pdps }: Props) {
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
@@ -37,6 +40,17 @@ export default function PdpTable({ pdps }: Props) {
       setSortKey(key);
       setSortDir('asc');
     }
+    setPage(1);
+  }
+
+  function changeStatusFilter(s: StatusFilter) {
+    setStatusFilter(s);
+    setPage(1);
+  }
+
+  function changeSearch(q: string) {
+    setSearch(q);
+    setPage(1);
   }
 
   const filtered = pdps
@@ -71,6 +85,10 @@ export default function PdpTable({ pdps }: Props) {
       return sortDir === 'asc' ? cmp : -cmp;
     });
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
   function SortArrow({ col }: { col: SortKey }) {
     if (sortKey !== col) return <span className="ml-1 text-navy/15">↕</span>;
     return <span className="ml-1 text-accent">{sortDir === 'asc' ? '↑' : '↓'}</span>;
@@ -84,7 +102,7 @@ export default function PdpTable({ pdps }: Props) {
           {(['all', 'registered', 'candidate', 'removed'] as StatusFilter[]).map((s) => (
             <button
               key={s}
-              onClick={() => setStatusFilter(s)}
+              onClick={() => changeStatusFilter(s)}
               className={`px-4 py-3 min-h-[44px] text-sm font-body font-medium uppercase tracking-wide transition-colors cursor-pointer select-none ${
                 statusFilter === s
                   ? 'text-accent border-b-2 border-accent'
@@ -99,7 +117,7 @@ export default function PdpTable({ pdps }: Props) {
           type="search"
           placeholder="Rechercher…"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => changeSearch(e.target.value)}
           className="ml-auto border border-navy/15 bg-cream rounded px-3 py-1.5 text-sm font-body focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent placeholder:text-navy/30"
         />
       </div>
@@ -144,7 +162,7 @@ export default function PdpTable({ pdps }: Props) {
                 </td>
               </tr>
             ) : (
-              filtered.map((pdp) => (
+              paginated.map((pdp) => (
                 <tr key={pdp.id} className="border-b border-navy/5 hover:bg-navy/[0.02] transition-colors">
                   <td className="px-3 py-2.5 font-medium">
                     <Link
@@ -192,6 +210,29 @@ export default function PdpTable({ pdps }: Props) {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-2">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={safePage === 1}
+            className="px-4 py-2 text-sm font-body font-medium text-navy/70 border border-navy/15 rounded hover:border-navy/35 hover:text-navy disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            ← Précédent
+          </button>
+          <span className="text-xs font-mono text-navy/50 uppercase tracking-wider">
+            Page {safePage} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={safePage === totalPages}
+            className="px-4 py-2 text-sm font-body font-medium text-navy/70 border border-navy/15 rounded hover:border-navy/35 hover:text-navy disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            Suivant →
+          </button>
+        </div>
+      )}
     </div>
   );
 }
