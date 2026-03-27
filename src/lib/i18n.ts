@@ -60,6 +60,21 @@ export const translations = {
     // History
     historyTitle: 'Change History',
     
+    // Detail page
+    detailBackToRegistry: '← Back to registry',
+    detailRegistrationNumber: 'No.',
+    detailRegistrationDate: 'Registration date',
+    detailWebsite: 'Website',
+    detailContactEmail: 'Contact email',
+    detailFirstTracked: 'First tracked',
+    detailLastTracked: 'Last tracked',
+    detailSource: 'Source',
+    detailChangeHistory: 'Change History',
+    detailNoChanges: 'No changes recorded.',
+    detailEventAdded: 'Added',
+    detailEventRemoved: 'Removed',
+    detailEventStatusChanged: 'Status changed',
+    
     // Footer
     footerDisclaimer: 'Unofficial tracker — data source:',
     footerPrivacy: 'Privacy Policy',
@@ -121,6 +136,21 @@ export const translations = {
     
     // History
     historyTitle: 'Historique des modifications',
+    
+    // Detail page
+    detailBackToRegistry: '← Retour au registre',
+    detailRegistrationNumber: 'N°',
+    detailRegistrationDate: 'Date d\'immatriculation',
+    detailWebsite: 'Site web',
+    detailContactEmail: 'Email de contact',
+    detailFirstTracked: 'Première observation',
+    detailLastTracked: 'Dernière observation',
+    detailSource: 'Source',
+    detailChangeHistory: 'Historique des modifications',
+    detailNoChanges: 'Aucune modification enregistrée.',
+    detailEventAdded: 'Ajout',
+    detailEventRemoved: 'Suppression',
+    detailEventStatusChanged: 'Changement',
     
     // Footer
     footerDisclaimer: 'Tracker non officiel — données source :',

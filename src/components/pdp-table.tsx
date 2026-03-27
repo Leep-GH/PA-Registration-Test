@@ -187,11 +187,11 @@ export default function PdpTable({ pdps }: Props) {
               </tr>
             ) : (
               paginated.map((pdp) => (
-                <tr key={pdp.id} className="border-b border-navy/5 hover:bg-navy/[0.02] transition-colors">
+                <tr key={pdp.id} className="border-b border-navy/5 hover:bg-navy/[0.03] transition-colors cursor-pointer">
                   <td className="px-3 py-2.5 font-medium">
                     <Link
                       href={`/pdp/${pdp.slug}`}
-                      className="text-navy hover:text-accent transition-colors"
+                      className="text-accent underline hover:text-accent/80 transition-colors font-semibold"
                     >
                       {pdp.name}
                     </Link>
