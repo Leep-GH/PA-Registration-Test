@@ -241,7 +241,7 @@ export default function PdpTable({ pdps }: Props) {
           >
             {t(language, 'paginationPrevious')}
           </button>
-          <span className="text-xs font-mono text-navy/50 uppercase tracking-wider">
+          <span className="text-xs font-mono text-navy/50 uppercase tracking-wider" key={`pg-${safePage}`}>
             {t(language, 'paginationPage', safePage, totalPages)}
           </span>
           <button
