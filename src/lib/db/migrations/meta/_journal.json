@@ -8,6 +8,20 @@
       "when": 1774545660316,
       "tag": "0000_moaning_stepford_cuckoos",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1774611288649,
+      "tag": "0001_little_night_thrasher",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1774611480867,
+      "tag": "0002_boring_selene",
+      "breakpoints": true
     }
   ]
 }

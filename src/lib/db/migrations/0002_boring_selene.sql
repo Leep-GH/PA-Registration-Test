@@ -1,0 +1,1 @@
+ALTER TABLE "pdps" ADD COLUMN "status_text" text;

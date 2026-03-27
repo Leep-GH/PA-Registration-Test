@@ -60,7 +60,9 @@ export const SELECTORS = {
    */
   columnHeaders: {
     name:    /nom commercial|nom|raison/i,
+    address: /adresse|établissement principal/i,
     website: /site internet|site web/i,
+    email:   /email|contact|e-mail/i,
     date:    /date|délivrance|immatriculation/i,
     status:  /statut/i,
   },
@@ -116,7 +118,9 @@ function extractUrl($cell: cheerio.Cheerio<Element>, $: cheerio.CheerioAPI): str
 
 interface ColumnMap {
   name: number;
+  address: number | null;
   website: number | null;
+  email: number | null;
   date: number | null;
   status: number;
 }
@@ -127,17 +131,26 @@ function detectColumns($: cheerio.CheerioAPI, $table: cheerio.Cheerio<Element>):
   );
   if (headers.length === 0) return null;
 
-  let name = -1, website = -1, date = -1, status = -1;
+  let name = -1, address = -1, website = -1, email = -1, date = -1, status = -1;
   for (let i = 0; i < headers.length; i++) {
     const h = headers[i];
     if (name === -1 && SELECTORS.columnHeaders.name.test(h)) { name = i; continue; }
+    if (address === -1 && SELECTORS.columnHeaders.address.test(h)) { address = i; continue; }
     if (website === -1 && SELECTORS.columnHeaders.website.test(h)) { website = i; continue; }
+    if (email === -1 && SELECTORS.columnHeaders.email.test(h)) { email = i; continue; }
     if (date === -1 && SELECTORS.columnHeaders.date.test(h)) { date = i; continue; }
     if (status === -1 && SELECTORS.columnHeaders.status.test(h)) { status = i; }
   }
 
   if (name === -1 || status === -1) return null;
-  return { name, website: website === -1 ? null : website, date: date === -1 ? null : date, status };
+  return {
+    name,
+    address: address === -1 ? null : address,
+    website: website === -1 ? null : website,
+    email: email === -1 ? null : email,
+    date: date === -1 ? null : date,
+    status,
+  };
 }
 
 /** Attempts to parse PDPs from a <table> element. Returns [] if the table doesn't look like a PDP list. */
@@ -178,12 +191,31 @@ function parseTable($: cheerio.CheerioAPI, tableEl: Element): PdpRecord[] {
       }
     }
 
+    let physicalAddress: string | undefined;
+    if (colMap.address !== null && cells[colMap.address]) {
+      const rawAddress = $(cells[colMap.address]).text().trim();
+      if (rawAddress && rawAddress.length > 0) {
+        physicalAddress = rawAddress;
+      }
+    }
+
+    let contactEmail: string | undefined;
+    if (colMap.email !== null && cells[colMap.email]) {
+      const rawEmail = $(cells[colMap.email]).text().trim();
+      if (rawEmail && rawEmail.length > 0) {
+        contactEmail = rawEmail;
+      }
+    }
+
     records.push({
       name: nameText,
       slug: generateSlug(nameText),
       status: normaliseStatus(statusText),
+      statusText,
       registrationDate,
       websiteUrl,
+      physicalAddress,
+      contactEmail,
     });
   }
 

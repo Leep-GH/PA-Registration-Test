@@ -6,9 +6,12 @@ export interface PdpRecord {
   name: string;
   slug: string;
   status: 'registered' | 'candidate' | 'removed';
+  statusText?: string;
   registrationNumber?: string;
   registrationDate?: string;
   websiteUrl?: string;
+  physicalAddress?: string;
+  contactEmail?: string;
 }
 
 /**

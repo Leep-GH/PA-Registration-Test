@@ -30,6 +30,7 @@ export default function PdpTable({ pdps }: Props) {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [hoveredHeader, setHoveredHeader] = useState<string | null>(null);
+  const [hoveredStatusCell, setHoveredStatusCell] = useState<string | null>(null);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
@@ -196,13 +197,24 @@ export default function PdpTable({ pdps }: Props) {
                     </Link>
                   </td>
                   <td className="px-3 py-2.5">
-                    <span
-                      className={
-                        STATUS_BADGE[pdp.status] ?? 'status-badge border-l-gray-400 text-gray-600'
-                      }
+                    <div
+                      className="relative inline-block"
+                      onMouseEnter={() => setHoveredStatusCell(`${pdp.id}`)}
+                      onMouseLeave={() => setHoveredStatusCell(null)}
                     >
-                      {getStatusLabel(pdp.status)}
-                    </span>
+                      <span
+                        className={
+                          STATUS_BADGE[pdp.status] ?? 'status-badge border-l-gray-400 text-gray-600'
+                        }
+                      >
+                        {getStatusLabel(pdp.status)}
+                      </span>
+                      {pdp.statusText && hoveredStatusCell === `${pdp.id}` && (
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-navy text-cream text-[10px] font-normal whitespace-nowrap rounded z-10 pointer-events-none">
+                          {pdp.statusText}
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
                     {pdp.registrationDate ?? '—'}

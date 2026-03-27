@@ -100,6 +100,19 @@ export default async function PdpDetailPage({ params }: Props) {
               </dd>
             </>
           )}
+          {pdp.contactEmail && (
+            <>
+              <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">Email de contact</dt>
+              <dd>
+                <a
+                  href={`mailto:${pdp.contactEmail}`}
+                  className="text-accent hover:underline truncate block font-mono text-xs"
+                >
+                  {pdp.contactEmail}
+                </a>
+              </dd>
+            </>
+          )}
           <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">Première observation</dt>
           <dd className="text-navy font-body">
             {new Date(pdp.firstSeenAt).toLocaleDateString('fr-FR', { dateStyle: 'long' })}

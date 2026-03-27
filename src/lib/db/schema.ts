@@ -9,9 +9,13 @@ export const pdps = pgTable('pdps', {
   slug: text('slug').notNull().unique(),
   /** 'registered' | 'candidate' | 'removed' */
   status: text('status', { enum: ['registered', 'candidate', 'removed'] }).notNull(),
+  /** Full status text for tooltips, e.g. "Complete file — awaiting interoperability tests" */
+  statusText: text('status_text'),
   registrationNumber: text('registration_number'),
   registrationDate: text('registration_date'),
   websiteUrl: text('website_url'),
+  physicalAddress: text('physical_address'),
+  contactEmail: text('contact_email'),
   /** ISO 8601 — set on INSERT, never updated */
   firstSeenAt: text('first_seen_at').notNull(),
   /** ISO 8601 — updated to run_at on every successful scrape where PDP appears */
