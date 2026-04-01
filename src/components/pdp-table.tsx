@@ -304,7 +304,7 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
                             <span className="relative group inline-flex">
                               <span
                                 className="inline-flex items-center px-1.5 py-px text-[10px] font-mono font-medium rounded-full whitespace-nowrap leading-tight cursor-default"
-                                style={{ background: '#fef9ec', color: '#7A5C0E', border: '1px solid #deb54a' }}
+                                style={{ background: '#e6f4f4', color: '#2A7F7F', border: '1px solid #a8d5d5' }}
                               >
                                 {t(language, 'badgeBothRegistries')}
                               </span>

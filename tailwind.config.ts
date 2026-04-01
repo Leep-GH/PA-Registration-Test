@@ -11,13 +11,13 @@ const config: Config = {
       colors: {
         cream: '#FAF9F6',
         navy: '#0F1F3D',
-        accent: '#C9A84C',
-        'accent-hover': '#A8893A',
+        accent: '#2B5EA7',
+        'accent-hover': '#234B8A',
         terracotta: '#C4622D',
       },
       fontFamily: {
-        display: ['Fraunces', 'Georgia', 'serif'],
-        body: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        display: ['"DM Serif Display"', 'Georgia', 'serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
     },

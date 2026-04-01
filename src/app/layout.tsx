@@ -3,7 +3,6 @@ import Link from 'next/link';
 import './globals.css';
 import { LanguageProvider } from '@/components/language-provider';
 import LanguageToggle from '@/components/language-toggle';
-import NavLinks from '@/components/nav-links';
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
@@ -48,36 +47,41 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+          href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
           rel="stylesheet"
         />
       </head>
       <body className="min-h-screen bg-cream text-navy">
         <LanguageProvider>
           <header className="bg-navy text-cream">
-            <div className="max-w-5xl mx-auto px-4 pt-9 pb-5">
+            <div className="max-w-5xl mx-auto px-4 pt-8 pb-6">
               <Link href="/" className="block">
-                <span className="font-display text-4xl sm:text-5xl tracking-tight">
+                <span className="font-display text-3xl sm:text-4xl tracking-tight">
                   Registry{' '}
                   <span className="text-accent">PA</span>
                 </span>
-                <span className="block text-cream/50 text-[10px] font-body uppercase tracking-[0.35em] mt-2">
-                  Plateformes Agréées · e-Invoicing Registry
+                <span className="block text-cream/75 text-[11px] font-body uppercase tracking-[0.3em] mt-1.5">
+                  Approved Platforms · DGFiP Registry
                 </span>
               </Link>
             </div>
-            <nav className="max-w-5xl mx-auto px-4 pb-5 flex items-center gap-6 text-sm font-body">
-              <NavLinks />
+            <nav className="max-w-5xl mx-auto px-4 pb-4 flex items-center gap-5 text-sm font-body">
+              <Link href="/" className="text-cream/80 hover:text-cream transition-colors">
+                Registry
+              </Link>
+              <Link href="/historique" className="text-cream/80 hover:text-cream transition-colors">
+                History
+              </Link>
               <LanguageToggle />
             </nav>
-            <div className="h-px bg-gradient-to-r from-accent via-accent/50 to-transparent" />
+            <div className="h-px bg-gradient-to-r from-accent via-accent/60 to-transparent" />
           </header>
 
           <main className="max-w-5xl mx-auto px-4 py-10">{children}</main>
 
           <footer className="hr-rule mt-16 py-8 text-center text-xs text-navy/40 font-mono">
             <p>
-              Unofficial tracker — data sources:{' '}
+              Unofficial tracker — data source:{' '}
               <a
                 href="https://www.impots.gouv.fr"
                 target="_blank"
@@ -85,15 +89,6 @@ export default function RootLayout({
                 className="text-accent hover:underline"
               >
                 impots.gouv.fr
-              </a>
-              {' · '}
-              <a
-                href="https://peppol.org"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent hover:underline"
-              >
-                peppol.org
               </a>
             </p>
             <p className="mt-2">
