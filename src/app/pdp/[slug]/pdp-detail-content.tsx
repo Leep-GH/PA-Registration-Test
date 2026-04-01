@@ -167,7 +167,7 @@ export default function PdpDetailContent({ pdp, history, linkedPeppolAp }: Props
             </h2>
             <span
               className="inline-flex items-center px-1.5 py-px text-[10px] font-mono font-medium rounded-full leading-tight"
-              style={{ background: '#e6f4f4', color: '#2A7F7F', border: '1px solid #a8d5d5' }}
+              style={{ background: '#fef9ec', color: '#7A5C0E', border: '1px solid #deb54a' }}
             >
               {t(language, 'badgeBothRegistries')}
             </span>

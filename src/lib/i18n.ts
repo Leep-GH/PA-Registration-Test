@@ -9,9 +9,9 @@ export const translations = {
     navHistory: 'History',
     
     // Main page
-    pageTitle: 'Approved Platform Registry',
+    pageTitle: 'PA Registry',
     pageDescription:
-      'Tracking the official DGFiP registry of Plateformes Agréées and the OpenPeppol certified Access Points registry.',
+      "The independent tracker for France's certified e-invoicing platforms.",
     lastUpdated: 'Last updated:',
     sourcesLabel: 'Sources:',
     sourceLink: 'impots.gouv.fr',
@@ -104,9 +104,9 @@ export const translations = {
     navHistory: 'Historique',
     
     // Main page
-    pageTitle: 'Registre des Plateformes Agréées',
+    pageTitle: 'PA Registry',
     pageDescription:
-      'Suivi du registre officiel DGFiP des Plateformes Agréées et du registre OpenPeppol des Access Points certifiés.',
+      'Le tracker indépendant des plateformes certifiées pour la e-facturation en France.',
     lastUpdated: 'Dernière mise à jour :',
     sourcesLabel: 'Sources :',
     sourceLink: 'impots.gouv.fr',
