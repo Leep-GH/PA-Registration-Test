@@ -2,6 +2,12 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm install --omit=optional",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "crons": [
+    {
+      "path": "/api/cron/scrape",
+      "schedule": "0 6 * * *"
+    }
+  ]
 }
 
