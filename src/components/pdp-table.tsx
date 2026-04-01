@@ -226,7 +226,14 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
               ) : (
                 (paginated as PeppolAp[]).map((ap) => (
                   <tr key={ap.id} className="border-b border-navy/5 hover:bg-navy/[0.03] transition-colors">
-                    <td className="px-3 py-2.5 font-semibold text-navy">{ap.name}</td>
+                    <td className="px-3 py-2.5 font-medium">
+                      <Link
+                        href={`/peppol/${ap.slug}`}
+                        className="text-accent underline hover:text-accent/80 transition-colors font-semibold"
+                      >
+                        {ap.name}
+                      </Link>
+                    </td>
                     <td className="px-3 py-2.5 text-sm text-navy/60">{ap.country ?? '—'}</td>
                     <td className="px-3 py-2.5">
                       <div className="flex gap-1.5">

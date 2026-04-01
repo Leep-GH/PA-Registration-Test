@@ -96,6 +96,17 @@ export const translations = {
     detailAddress: 'Address',
     detailPeppolSection: 'Peppol Access Point',
     detailPeppolExplainer: 'This platform is also certified as a Peppol Access Point by OpenPeppol. Peppol is an international network enabling cross-border electronic document exchange.',
+
+    // Peppol-only detail page
+    peppolDetailOnlyBadge: 'Peppol AP only',
+    peppolDetailNotPaNotice: 'This platform appears in the OpenPeppol Access Point registry but is not registered as a French Plateforme Agréée (PA) in the DGFiP registry.',
+    peppolDetailCountry: 'Country',
+    peppolDetailAuthority: 'Authority',
+    peppolDetailCertifications: 'Certifications',
+    peppolDetailFirstSeen: 'First tracked',
+    peppolDetailLastSeen: 'Last tracked',
+    peppolDetailSource: 'Source',
+    peppolDetailViewOnPeppol: 'View on peppol.org',
   },
   fr: {
     // Header
@@ -191,6 +202,17 @@ export const translations = {
     detailAddress: 'Adresse',
     detailPeppolSection: 'Point d\'Accès Peppol',
     detailPeppolExplainer: 'Cette plateforme est également certifiée Point d\'Accès Peppol par OpenPeppol. Peppol est un réseau international permettant l\'échange de documents électroniques transfrontaliers.',
+
+    // Peppol-only detail page
+    peppolDetailOnlyBadge: 'Peppol AP uniquement',
+    peppolDetailNotPaNotice: 'Cette plateforme est répertoriée dans le registre OpenPeppol des Points d\'Accès mais n\'est pas immatriculée comme Plateforme Agréée (PA) dans le registre DGFiP.',
+    peppolDetailCountry: 'Pays',
+    peppolDetailAuthority: 'Autorité',
+    peppolDetailCertifications: 'Certifications',
+    peppolDetailFirstSeen: 'Première détection',
+    peppolDetailLastSeen: 'Dernière détection',
+    peppolDetailSource: 'Source',
+    peppolDetailViewOnPeppol: 'Voir sur peppol.org',
   },
 } as const;
 
