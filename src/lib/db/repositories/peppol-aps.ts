@@ -89,6 +89,17 @@ export async function getAllPeppolAps(filter?: {
     : db.select().from(peppolAps);
 }
 
+/** Returns a single Peppol AP by ID, or null if not found. */
+export async function getPeppolApById(id: number): Promise<PeppolAp | null> {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(peppolAps)
+    .where(eq(peppolAps.id, id))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
 /** Returns a single Peppol AP by slug, or null if not found. */
 export async function getPeppolApBySlug(slug: string): Promise<PeppolAp | null> {
   const db = getDb();

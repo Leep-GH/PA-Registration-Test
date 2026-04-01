@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useLanguage } from '@/components/language-provider';
 import { t } from '@/lib/i18n';
-import type { Pdp } from '@/lib/db/schema';
+import type { Pdp, PeppolAp } from '@/lib/db/schema';
 
 interface Props {
   pdp: Pdp;
@@ -14,6 +14,7 @@ interface Props {
     newValue: string | null;
     detectedAt: string;
   }>;
+  linkedPeppolAp?: PeppolAp | null;
 }
 
 const STATUS_LABELS: Record<string, Record<string, string>> = {
@@ -48,7 +49,7 @@ const EVENT_LABELS: Record<string, Record<string, { label: string; classes: stri
   },
 };
 
-export default function PdpDetailContent({ pdp, history }: Props) {
+export default function PdpDetailContent({ pdp, history, linkedPeppolAp }: Props) {
   const { language } = useLanguage();
   const locale = language === 'fr' ? 'fr-FR' : 'en-US';
 
@@ -121,6 +122,14 @@ export default function PdpDetailContent({ pdp, history }: Props) {
               </dd>
             </>
           )}
+          {pdp.physicalAddress && (
+            <>
+              <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+                {t(language, 'detailAddress')}
+              </dt>
+              <dd className="text-navy font-body">{pdp.physicalAddress}</dd>
+            </>
+          )}
           <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
             {t(language, 'detailFirstTracked')}
           </dt>
@@ -148,6 +157,63 @@ export default function PdpDetailContent({ pdp, history }: Props) {
           </dd>
         </dl>
       </div>
+
+      {/* Peppol AP section */}
+      {linkedPeppolAp && (
+        <div className="border border-navy/10 p-6">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="font-display text-xl text-navy">
+              {t(language, 'detailPeppolSection')}
+            </h2>
+            <span
+              className="inline-flex items-center px-1.5 py-px text-[10px] font-mono font-medium rounded-full leading-tight"
+              style={{ background: '#e6f4f4', color: '#2A7F7F', border: '1px solid #a8d5d5' }}
+            >
+              {t(language, 'badgeBothRegistries')}
+            </span>
+          </div>
+          <p className="mt-3 text-sm font-body text-navy/60 max-w-prose">
+            {t(language, 'detailPeppolExplainer')}
+          </p>
+          <div className="hr-rule mt-4" />
+          <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+              {t(language, 'peppolApCountry')}
+            </dt>
+            <dd className="text-navy font-body">{linkedPeppolAp.country ?? '—'}</dd>
+            <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+              {t(language, 'peppolApAuthority')}
+            </dt>
+            <dd className="text-navy font-body">{linkedPeppolAp.authority ?? '—'}</dd>
+            <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+              {t(language, 'peppolApCertifications')}
+            </dt>
+            <dd>
+              <div className="flex gap-1.5">
+                {linkedPeppolAp.apCertified && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-200">AP</span>
+                )}
+                {linkedPeppolAp.smpCertified && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-purple-50 text-purple-700 border border-purple-200">SMP</span>
+                )}
+              </div>
+            </dd>
+            <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+              {t(language, 'detailSource')}
+            </dt>
+            <dd>
+              <a
+                href="https://peppol.org/members/peppol-certified-service-providers/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent hover:underline font-mono text-xs"
+              >
+                peppol.org
+              </a>
+            </dd>
+          </dl>
+        </div>
+      )}
 
       {/* Change history */}
       <div>

@@ -301,12 +301,16 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
                             {pdp.name}
                           </Link>
                           {isLinked && (
-                            <span
-                              title={t(language, 'registryFilterBoth')}
-                              className="inline-flex items-center px-1.5 py-px text-[10px] font-mono font-medium rounded-full whitespace-nowrap leading-tight"
-                              style={{ background: '#e6f4f4', color: '#2A7F7F', border: '1px solid #a8d5d5' }}
-                            >
-                              {t(language, 'badgeBothRegistries')}
+                            <span className="relative group inline-flex">
+                              <span
+                                className="inline-flex items-center px-1.5 py-px text-[10px] font-mono font-medium rounded-full whitespace-nowrap leading-tight cursor-default"
+                                style={{ background: '#e6f4f4', color: '#2A7F7F', border: '1px solid #a8d5d5' }}
+                              >
+                                {t(language, 'badgeBothRegistries')}
+                              </span>
+                              <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-navy text-cream text-[10px] font-normal rounded z-20 w-56 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                                {t(language, 'badgeBothTooltip')}
+                              </span>
                             </span>
                           )}
                         </div>

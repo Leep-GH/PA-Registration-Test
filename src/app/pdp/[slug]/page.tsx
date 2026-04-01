@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getPdpBySlug, getAllPdps } from '@/lib/db/repositories/pdps';
 import { getChangesForPdp } from '@/lib/db/repositories/changes';
+import { getLinksByPdpId } from '@/lib/db/repositories/cross-registry-links';
+import { getPeppolApById } from '@/lib/db/repositories/peppol-aps';
 import PdpDetailContent from './pdp-detail-content';
 
 interface Props {
@@ -32,7 +34,13 @@ export default async function PdpDetailPage({ params }: Props) {
   const pdp = await getPdpBySlug(params.slug).catch(() => null);
   if (!pdp) notFound();
 
-  const history = await getChangesForPdp(pdp.id, 50).catch(() => []);
+  const [history, links] = await Promise.all([
+    getChangesForPdp(pdp.id, 50).catch(() => []),
+    getLinksByPdpId(pdp.id).catch(() => []),
+  ]);
+  const linkedPeppolAp = links.length > 0
+    ? await getPeppolApById(links[0].peppolApId).catch(() => null)
+    : null;
 
-  return <PdpDetailContent pdp={pdp} history={history} />;
+  return <PdpDetailContent pdp={pdp} history={history} linkedPeppolAp={linkedPeppolAp} />;
 }

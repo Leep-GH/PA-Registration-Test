@@ -34,7 +34,10 @@ export default function DashboardContent({
           {t(language, 'pageTitle')}
         </h1>
         <p className="mt-3 text-navy/60 font-body text-sm leading-relaxed max-w-2xl">
-          {t(language, 'pageDescription')}{' '}
+          {t(language, 'pageDescription')}
+        </p>
+        <p className="mt-1 font-body text-xs text-navy/45">
+          {t(language, 'sourcesLabel')}{' '}
           <a
             href="https://www.impots.gouv.fr"
             target="_blank"
@@ -42,6 +45,15 @@ export default function DashboardContent({
             className="text-accent hover:underline"
           >
             {t(language, 'sourceLink')}
+          </a>
+          {' · '}
+          <a
+            href="https://peppol.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-accent hover:underline"
+          >
+            {t(language, 'peppolSourceLink')}
           </a>
         </p>
         {lastRun && (

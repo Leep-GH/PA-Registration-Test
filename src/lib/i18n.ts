@@ -11,9 +11,11 @@ export const translations = {
     // Main page
     pageTitle: 'Approved Platform Registry',
     pageDescription:
-      'Real-time tracking of the official DGFiP registry of approved platforms (ex-PDP) for electronic invoicing.',
+      'Tracking the official DGFiP registry of Plateformes Agréées and the OpenPeppol certified Access Points registry.',
     lastUpdated: 'Last updated:',
-    sourceLink: 'Source: impots.gouv.fr',
+    sourcesLabel: 'Sources:',
+    sourceLink: 'impots.gouv.fr',
+    peppolSourceLink: 'peppol.org',
     
     // Stats
     statsRegistered: 'Registered',
@@ -90,6 +92,10 @@ export const translations = {
     peppolApCountry: 'Country',
     peppolApAuthority: 'Authority',
     peppolApCertifications: 'Certifications',
+    badgeBothTooltip: 'This platform is certified as both a French Plateforme Agréée (DGFiP) and a Peppol Access Point (OpenPeppol)',
+    detailAddress: 'Address',
+    detailPeppolSection: 'Peppol Access Point',
+    detailPeppolExplainer: 'This platform is also certified as a Peppol Access Point by OpenPeppol. Peppol is an international network enabling cross-border electronic document exchange.',
   },
   fr: {
     // Header
@@ -100,9 +106,11 @@ export const translations = {
     // Main page
     pageTitle: 'Registre des Plateformes Agréées',
     pageDescription:
-      'Suivi du registre officiel DGFiP mis à jour quotidiennement.',
+      'Suivi du registre officiel DGFiP des Plateformes Agréées et du registre OpenPeppol des Access Points certifiés.',
     lastUpdated: 'Dernière mise à jour :',
-    sourceLink: 'Source : impots.gouv.fr',
+    sourcesLabel: 'Sources :',
+    sourceLink: 'impots.gouv.fr',
+    peppolSourceLink: 'peppol.org',
     
     // Stats
     statsRegistered: 'Immatriculée',
@@ -179,6 +187,10 @@ export const translations = {
     peppolApCountry: 'Pays',
     peppolApAuthority: 'Autorité',
     peppolApCertifications: 'Certifications',
+    badgeBothTooltip: 'Cette plateforme est certifiée à la fois Plateforme Agréée (DGFiP) et Point d\'Accès Peppol (OpenPeppol)',
+    detailAddress: 'Adresse',
+    detailPeppolSection: 'Point d\'Accès Peppol',
+    detailPeppolExplainer: 'Cette plateforme est également certifiée Point d\'Accès Peppol par OpenPeppol. Peppol est un réseau international permettant l\'échange de documents électroniques transfrontaliers.',
   },
 } as const;
 
