@@ -91,3 +91,54 @@ jobs:
           # Call the status endpoint so it can immediately fire the dead man's switch
           # alert if the last successful run is older than 48 hours.
           curl -s -o /dev/null "${{ vars.APP_URL }}/api/v1/status" || true
+
+  peppol-scrape:
+    name: Trigger Peppol AP scrape
+    needs: scrape
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Peppol AP scrape
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            "${{ vars.APP_URL }}/api/admin/trigger-peppol-ap-scrape" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_SCRAPE_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "HTTP status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "Peppol AP scrape triggered successfully."
+          elif [ "$HTTP_STATUS" -eq 409 ]; then
+            echo "Peppol AP scrape already in progress — skipping."
+            exit 0
+          else
+            echo "Peppol AP scrape trigger failed with HTTP $HTTP_STATUS"
+            exit 1
+          fi
+
+  peppol-retry:
+    name: Retry Peppol AP scrape (attempt 2, after 1h)
+    needs: peppol-scrape
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait 1 hour before retry
+        run: sleep 3600
+
+      - name: Retry Peppol AP scrape
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            "${{ vars.APP_URL }}/api/admin/trigger-peppol-ap-scrape" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_SCRAPE_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "HTTP status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "Peppol AP retry scrape triggered successfully."
+          elif [ "$HTTP_STATUS" -eq 409 ]; then
+            echo "Peppol AP scrape already in progress — skipping."
+            exit 0
+          else
+            echo "Peppol AP scrape retry failed with HTTP $HTTP_STATUS"
+            exit 1
+          fi
