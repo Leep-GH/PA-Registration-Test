@@ -15,7 +15,7 @@ jobs:
       - name: Trigger scrape
         id: trigger
         run: |
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -f -X POST \
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L -X POST \
             "${{ vars.APP_URL }}/api/admin/trigger-scrape" \
             -H "Authorization: Bearer ${{ secrets.ADMIN_SCRAPE_TOKEN }}" \
             -H "Content-Type: application/json" \
@@ -42,7 +42,7 @@ jobs:
 
       - name: Retry scrape trigger
         run: |
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -f -X POST \
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L -X POST \
             "${{ vars.APP_URL }}/api/admin/trigger-scrape" \
             -H "Authorization: Bearer ${{ secrets.ADMIN_SCRAPE_TOKEN }}" \
             -H "Content-Type: application/json" \
@@ -69,7 +69,7 @@ jobs:
 
       - name: Final retry scrape trigger
         run: |
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -f -X POST \
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L -X POST \
             "${{ vars.APP_URL }}/api/admin/trigger-scrape" \
             -H "Authorization: Bearer ${{ secrets.ADMIN_SCRAPE_TOKEN }}" \
             -H "Content-Type: application/json" \
@@ -100,7 +100,7 @@ jobs:
     steps:
       - name: Trigger Peppol AP scrape
         run: |
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L -X POST \
             "${{ vars.APP_URL }}/api/admin/trigger-peppol-ap-scrape" \
             -H "Authorization: Bearer ${{ secrets.ADMIN_SCRAPE_TOKEN }}" \
             -H "Content-Type: application/json" \
@@ -127,7 +127,7 @@ jobs:
 
       - name: Retry Peppol AP scrape
         run: |
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L -X POST \
             "${{ vars.APP_URL }}/api/admin/trigger-peppol-ap-scrape" \
             -H "Authorization: Bearer ${{ secrets.ADMIN_SCRAPE_TOKEN }}" \
             -H "Content-Type: application/json" \
