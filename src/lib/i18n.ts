@@ -82,8 +82,8 @@ export const translations = {
     // Registry filter
     registryFilterLabel: 'Registry',
     registryFilterAll: 'All registries',
-    registryFilterPa: 'PA (DGFiP)',
-    registryFilterPeppolAp: 'Peppol AP',
+    registryFilterPa: 'PA only',
+    registryFilterPeppolAp: 'Peppol AP only',
     registryFilterBoth: 'Both registries',
     badgePeppolAp: 'Peppol AP',
     badgeBothRegistries: 'Both',
@@ -171,8 +171,8 @@ export const translations = {
     // Registry filter
     registryFilterLabel: 'Registre',
     registryFilterAll: 'Tous les registres',
-    registryFilterPa: 'PA (DGFiP)',
-    registryFilterPeppolAp: 'Peppol AP',
+    registryFilterPa: 'PA uniquement',
+    registryFilterPeppolAp: 'Peppol AP uniquement',
     registryFilterBoth: 'Les deux registres',
     badgePeppolAp: 'Peppol AP',
     badgeBothRegistries: 'Les deux',

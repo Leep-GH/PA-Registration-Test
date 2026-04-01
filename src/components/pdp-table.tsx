@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/components/language-provider';
 import { t, type Language } from '@/lib/i18n';
-import type { Pdp } from '@/lib/db/schema';
+import type { Pdp, PeppolAp } from '@/lib/db/schema';
 
 type SortKey = 'name' | 'status' | 'registrationDate' | 'firstSeenAt';
 type SortDir = 'asc' | 'desc';
@@ -23,11 +23,11 @@ interface Props {
   pdps: Pdp[];
   /** Set of pdpIds that also appear in the Peppol AP registry */
   linkedPdpIds?: Set<number>;
-  /** Set of peppolApIds: used when registryFilter='peppol_ap' or 'both' */
-  peppolApIds?: Set<number>;
+  /** Peppol APs (DGFIP authority) that have no matching PA record */
+  peppolOnlyAps?: PeppolAp[];
 }
 
-export default function PdpTable({ pdps, linkedPdpIds = new Set() }: Props) {
+export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps = [] }: Props) {
   const { language } = useLanguage();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
@@ -55,6 +55,7 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set() }: Props) {
 
   function changeRegistryFilter(r: RegistryFilter) {
     setRegistryFilter(r);
+    if (r === 'peppol_ap') setStatusFilter('all');
     setPage(1);
   }
 
@@ -63,59 +64,63 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set() }: Props) {
     setPage(1);
   }
 
-  const filtered = useMemo(() => {
+  const filteredPdps = useMemo(() => {
+    if (registryFilter === 'peppol_ap') return [];
     return pdps
       .filter((p) => {
-        // Status filter
         if (statusFilter !== 'all' && p.status !== statusFilter) return false;
-
-        // Registry filter
         const isLinked = linkedPdpIds.has(p.id);
-        if (registryFilter === 'pa' && isLinked) return false;          // PA-only: exclude linked
-        if (registryFilter === 'peppol_ap' && !isLinked) return false;  // Peppol AP: only show certified
-        if (registryFilter === 'both' && !isLinked) return false;       // Both: only show linked
-
-        // Search
+        if (registryFilter === 'pa' && isLinked) return false;
+        if (registryFilter === 'both' && !isLinked) return false;
         if (search) {
           const q = search.toLowerCase();
-          return (
-            p.name.toLowerCase().includes(q) ||
-            p.slug.includes(q)
-          );
+          return p.name.toLowerCase().includes(q) || p.slug.includes(q);
         }
         return true;
       })
       .sort((a, b) => {
         let cmp = 0;
         switch (sortKey) {
-          case 'name':
-            cmp = a.name.localeCompare(b.name, 'fr');
-            break;
-          case 'status':
-            cmp = a.status.localeCompare(b.status);
-            break;
-          case 'registrationDate':
-            cmp = (a.registrationDate ?? '').localeCompare(b.registrationDate ?? '');
-            break;
-          case 'firstSeenAt':
-            cmp = a.firstSeenAt.localeCompare(b.firstSeenAt);
-            break;
+          case 'name':             cmp = a.name.localeCompare(b.name, 'fr'); break;
+          case 'status':           cmp = a.status.localeCompare(b.status); break;
+          case 'registrationDate': cmp = (a.registrationDate ?? '').localeCompare(b.registrationDate ?? ''); break;
+          case 'firstSeenAt':      cmp = a.firstSeenAt.localeCompare(b.firstSeenAt); break;
         }
         return sortDir === 'asc' ? cmp : -cmp;
       });
   }, [pdps, statusFilter, registryFilter, linkedPdpIds, search, sortKey, sortDir]);
 
+  const filteredPeppolAps = useMemo(() => {
+    if (registryFilter !== 'peppol_ap') return [];
+    return peppolOnlyAps
+      .filter((ap) => {
+        if (!search) return true;
+        const q = search.toLowerCase();
+        return ap.name.toLowerCase().includes(q) || (ap.country ?? '').toLowerCase().includes(q);
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+  }, [peppolOnlyAps, registryFilter, search]);
+
+  const filterCounts: Record<RegistryFilter, number> = useMemo(() => ({
+    all:       pdps.length,
+    pa:        pdps.length - linkedPdpIds.size,
+    peppol_ap: peppolOnlyAps.length,
+    both:      linkedPdpIds.size,
+  }), [pdps.length, linkedPdpIds.size, peppolOnlyAps.length]);
+
   const totalPages = useMemo(() => {
-    return Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  }, [filtered.length]);
+    const count = registryFilter === 'peppol_ap' ? filteredPeppolAps.length : filteredPdps.length;
+    return Math.max(1, Math.ceil(count / PAGE_SIZE));
+  }, [filteredPdps.length, filteredPeppolAps.length, registryFilter]);
 
   const safePage = useMemo(() => {
     return Math.min(page, totalPages);
   }, [page, totalPages]);
 
   const paginated = useMemo(() => {
-    return filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-  }, [filtered, safePage]);
+    const source = (registryFilter === 'peppol_ap' ? filteredPeppolAps : filteredPdps) as (Pdp | PeppolAp)[];
+    return source.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  }, [filteredPdps, filteredPeppolAps, registryFilter, safePage]);
 
   function SortArrow({ col }: { col: SortKey }) {
     if (sortKey !== col) return <span className="ml-1 text-navy/15">↕</span>;
@@ -140,53 +145,47 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set() }: Props) {
     <div className="space-y-4">
       {/* Controls */}
       <div className="flex flex-wrap gap-3 items-start">
-        {/* Status tabs */}
-        <div className="flex gap-1">
-          {(['all', 'registered', 'candidate', 'removed'] as StatusFilter[]).map((s) => (
-            <button
-              key={s}
-              onClick={() => changeStatusFilter(s)}
-              className={`px-4 py-3 min-h-[44px] text-sm font-body font-medium uppercase tracking-wide transition-colors cursor-pointer select-none ${
-                statusFilter === s
-                  ? 'text-accent border-b-2 border-accent'
-                  : 'text-navy/55 hover:text-navy'
-              }`}
-            >
-              {s === 'all' ? t(language, 'tableStatusFilter') : getStatusLabel(s)}
-            </button>
-          ))}
-        </div>
-
-        {/* Registry multi-select checkboxes */}
-        <div className="flex items-center gap-3 ml-4 flex-wrap">
-          <span className="text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest">
-            {t(language, 'registryFilterLabel')}
-          </span>
-          {registryOptions.map(({ value, label }) => (
-            <label
-              key={value}
-              className="flex items-center gap-1.5 cursor-pointer select-none"
-            >
-              <input
-                type="radio"
-                name="registry-filter"
-                checked={registryFilter === value}
-                onChange={() => changeRegistryFilter(value)}
-                className="accent-accent w-3.5 h-3.5"
-              />
-              <span
-                className={`text-sm font-body transition-colors ${
-                  registryFilter === value ? 'text-accent font-medium' : 'text-navy/60'
+        {/* Status tabs — hidden in Peppol-only mode */}
+        {registryFilter !== 'peppol_ap' && (
+          <div className="flex gap-1">
+            {(['all', 'registered', 'candidate', 'removed'] as StatusFilter[]).map((s) => (
+              <button
+                key={s}
+                onClick={() => changeStatusFilter(s)}
+                className={`px-4 py-3 min-h-[44px] text-sm font-body font-medium uppercase tracking-wide transition-colors cursor-pointer select-none ${
+                  statusFilter === s
+                    ? 'text-accent border-b-2 border-accent'
+                    : 'text-navy/55 hover:text-navy'
                 }`}
               >
-                {label}
+                {s === 'all' ? t(language, 'tableStatusFilter') : getStatusLabel(s)}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Registry filter chips */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {registryOptions.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => changeRegistryFilter(value)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-body font-semibold tracking-wide transition-all border ${
+                registryFilter === value
+                  ? 'bg-accent/10 text-accent border-accent/30'
+                  : 'bg-transparent text-navy/55 border-navy/20 hover:border-navy/40 hover:text-navy'
+              }`}
+            >
+              {label}
+              <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full leading-none ${
+                registryFilter === value
+                  ? 'bg-accent/15 text-accent'
+                  : 'bg-navy/10 text-navy/40'
+              }`}>
+                {filterCounts[value]}
               </span>
-              {value === 'both' && linkedPdpIds.size > 0 && (
-                <span className="ml-0.5 px-1.5 py-0.5 text-[10px] rounded-full bg-accent/10 text-accent font-mono">
-                  {linkedPdpIds.size}
-                </span>
-              )}
-            </label>
+            </button>
           ))}
         </div>
 
@@ -200,123 +199,165 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set() }: Props) {
       </div>
 
       <p className="text-xs font-mono text-navy/40 uppercase tracking-wider">
-        {t(language, statusFilter === 'registered' ? 'tablePlatformsApproved' : 'tablePlatforms', filtered.length)}
+        {registryFilter === 'peppol_ap'
+          ? t(language, 'tablePlatforms', filteredPeppolAps.length)
+          : t(language, statusFilter === 'registered' ? 'tablePlatformsApproved' : 'tablePlatforms', filteredPdps.length)}
       </p>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-sm font-body">
-          <thead>
-            <tr className="border-b-2 border-navy/10">
-              {(
-                [
-                  { key: 'name' as SortKey, label: t(language, 'tableColName') },
-                  { key: 'status' as SortKey, label: t(language, 'tableColStatus') },
-                  { key: 'registrationDate' as SortKey, label: t(language, 'tableColDate') },
-                  { key: null, label: t(language, 'tableColWebsite') },
-                  { key: 'firstSeenAt' as SortKey, label: t(language, 'tableColFirstSeen') },
-                ] as { key: SortKey | null; label: string }[]
-              ).map(({ key, label }) => (
-                <th
-                  key={label}
-                  className={`relative px-3 py-2.5 text-left text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest whitespace-nowrap ${
-                    key ? 'cursor-pointer hover:text-navy select-none' : ''
-                  }`}
-                  onClick={() => key && handleSort(key)}
-                  onMouseEnter={() => key === 'firstSeenAt' && setHoveredHeader('firstSeenAt')}
-                  onMouseLeave={() => setHoveredHeader(null)}
-                >
-                  {label}
-                  {key && <SortArrow col={key} />}
-                  {key === 'firstSeenAt' && hoveredHeader === 'firstSeenAt' && (
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-navy text-cream text-[10px] font-normal whitespace-nowrap rounded z-10 pointer-events-none">
-                      {t(language, 'tooltipFirstTracked')}
-                    </div>
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody
-            key={`page-${safePage}`}
-            className="transition-opacity duration-150 ease-in-out"
-          >
-            {filtered.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-3 py-8 text-center text-navy/40 font-body">
-                  {t(language, 'tableNoResults')}
-                </td>
+        {registryFilter === 'peppol_ap' ? (
+          /* Peppol-only table */
+          <table className="w-full text-sm font-body">
+            <thead>
+              <tr className="border-b-2 border-navy/10">
+                <th className="px-3 py-2.5 text-left text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest">{t(language, 'tableColName')}</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest">{t(language, 'peppolApCountry')}</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest">{t(language, 'peppolApCertifications')}</th>
               </tr>
-            ) : (
-              paginated.map((pdp) => {
-                const isLinked = linkedPdpIds.has(pdp.id);
-                return (
-                  <tr key={pdp.id} className="border-b border-navy/5 hover:bg-navy/[0.03] transition-colors cursor-pointer">
-                    <td className="px-3 py-2.5 font-medium">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Link
-                          href={`/pdp/${pdp.slug}`}
-                          className="text-accent underline hover:text-accent/80 transition-colors font-semibold"
-                        >
-                          {pdp.name}
-                        </Link>
-                        {isLinked && (
-                          <span
-                            title={t(language, 'registryFilterBoth')}
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap"
-                          >
-                            <span>⇌</span>
-                            {t(language, 'badgeBothRegistries')}
-                          </span>
+            </thead>
+            <tbody key={`page-peppol-${safePage}`} className="transition-opacity duration-150 ease-in-out">
+              {(paginated as PeppolAp[]).length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="px-3 py-8 text-center text-navy/40 font-body">
+                    {t(language, 'tableNoResults')}
+                  </td>
+                </tr>
+              ) : (
+                (paginated as PeppolAp[]).map((ap) => (
+                  <tr key={ap.id} className="border-b border-navy/5 hover:bg-navy/[0.03] transition-colors">
+                    <td className="px-3 py-2.5 font-semibold text-navy">{ap.name}</td>
+                    <td className="px-3 py-2.5 text-sm text-navy/60">{ap.country ?? '—'}</td>
+                    <td className="px-3 py-2.5">
+                      <div className="flex gap-1.5">
+                        {ap.apCertified && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-200">AP</span>
+                        )}
+                        {ap.smpCertified && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-purple-50 text-purple-700 border border-purple-200">SMP</span>
                         )}
                       </div>
-                    </td>
-                    <td className="px-3 py-2.5">
-                      <div
-                        className="relative inline-block"
-                        onMouseEnter={() => setHoveredStatusCell(`${pdp.id}`)}
-                        onMouseLeave={() => setHoveredStatusCell(null)}
-                      >
-                        <span
-                          className={
-                            STATUS_BADGE[pdp.status] ?? 'status-badge border-l-gray-400 text-gray-600'
-                          }
-                        >
-                          {getStatusLabel(pdp.status)}
-                        </span>
-                        {pdp.statusText && hoveredStatusCell === `${pdp.id}` && (
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-navy text-cream text-[10px] font-normal whitespace-nowrap rounded z-10 pointer-events-none">
-                            {pdp.statusText}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
-                      {pdp.registrationDate ?? '—'}
-                    </td>
-                    <td className="px-3 py-2.5">
-                      {pdp.websiteUrl ? (
-                        <a
-                          href={pdp.websiteUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-accent hover:underline text-xs font-mono truncate block max-w-[160px]"
-                        >
-                          {pdp.websiteUrl.replace(/^https?:\/\//, '')}
-                        </a>
-                      ) : (
-                        <span className="text-navy/20">—</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
-                      {new Date(pdp.firstSeenAt).toLocaleDateString('fr-FR')}
                     </td>
                   </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                ))
+              )}
+            </tbody>
+          </table>
+        ) : (
+          /* PA (DGFiP) table */
+          <table className="w-full text-sm font-body">
+            <thead>
+              <tr className="border-b-2 border-navy/10">
+                {(
+                  [
+                    { key: 'name' as SortKey, label: t(language, 'tableColName') },
+                    { key: 'status' as SortKey, label: t(language, 'tableColStatus') },
+                    { key: 'registrationDate' as SortKey, label: t(language, 'tableColDate') },
+                    { key: null, label: t(language, 'tableColWebsite') },
+                    { key: 'firstSeenAt' as SortKey, label: t(language, 'tableColFirstSeen') },
+                  ] as { key: SortKey | null; label: string }[]
+                ).map(({ key, label }) => (
+                  <th
+                    key={label}
+                    className={`relative px-3 py-2.5 text-left text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest whitespace-nowrap ${
+                      key ? 'cursor-pointer hover:text-navy select-none' : ''
+                    }`}
+                    onClick={() => key && handleSort(key)}
+                    onMouseEnter={() => key === 'firstSeenAt' && setHoveredHeader('firstSeenAt')}
+                    onMouseLeave={() => setHoveredHeader(null)}
+                  >
+                    {label}
+                    {key && <SortArrow col={key} />}
+                    {key === 'firstSeenAt' && hoveredHeader === 'firstSeenAt' && (
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-navy text-cream text-[10px] font-normal whitespace-nowrap rounded z-10 pointer-events-none">
+                        {t(language, 'tooltipFirstTracked')}
+                      </div>
+                    )}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody
+              key={`page-${safePage}`}
+              className="transition-opacity duration-150 ease-in-out"
+            >
+              {filteredPdps.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-3 py-8 text-center text-navy/40 font-body">
+                    {t(language, 'tableNoResults')}
+                  </td>
+                </tr>
+              ) : (
+                (paginated as Pdp[]).map((pdp) => {
+                  const isLinked = linkedPdpIds.has(pdp.id);
+                  return (
+                    <tr key={pdp.id} className="border-b border-navy/5 hover:bg-navy/[0.03] transition-colors cursor-pointer">
+                      <td className="px-3 py-2.5 font-medium">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Link
+                            href={`/pdp/${pdp.slug}`}
+                            className="text-accent underline hover:text-accent/80 transition-colors font-semibold"
+                          >
+                            {pdp.name}
+                          </Link>
+                          {isLinked && (
+                            <span
+                              title={t(language, 'registryFilterBoth')}
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap"
+                            >
+                              <span>⇌</span>
+                              {t(language, 'badgeBothRegistries')}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <div
+                          className="relative inline-block"
+                          onMouseEnter={() => setHoveredStatusCell(`${pdp.id}`)}
+                          onMouseLeave={() => setHoveredStatusCell(null)}
+                        >
+                          <span
+                            className={
+                              STATUS_BADGE[pdp.status] ?? 'status-badge border-l-gray-400 text-gray-600'
+                            }
+                          >
+                            {getStatusLabel(pdp.status)}
+                          </span>
+                          {pdp.statusText && hoveredStatusCell === `${pdp.id}` && (
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-navy text-cream text-[10px] font-normal whitespace-nowrap rounded z-10 pointer-events-none">
+                              {pdp.statusText}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
+                        {pdp.registrationDate ?? '—'}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        {pdp.websiteUrl ? (
+                          <a
+                            href={pdp.websiteUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-accent hover:underline text-xs font-mono truncate block max-w-[160px]"
+                          >
+                            {pdp.websiteUrl.replace(/^https?:\/\//, '')}
+                          </a>
+                        ) : (
+                          <span className="text-navy/20">—</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
+                        {new Date(pdp.firstSeenAt).toLocaleDateString('fr-FR')}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {/* Pagination */}

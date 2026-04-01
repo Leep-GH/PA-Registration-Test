@@ -4,7 +4,7 @@ import { useLanguage } from '@/components/language-provider';
 import { t } from '@/lib/i18n';
 import StatsBar from '@/components/stats-bar';
 import PdpTable from '@/components/pdp-table';
-import type { Pdp } from '@/lib/db/schema';
+import type { Pdp, PeppolAp } from '@/lib/db/schema';
 
 interface DashboardContentProps {
   pdps: Pdp[];
@@ -13,6 +13,8 @@ interface DashboardContentProps {
   candidateCount: number;
   /** Set of pdpIds that also appear in the Peppol AP registry */
   linkedPdpIds: Set<number>;
+  /** Peppol APs (DGFIP authority) that have no matching PA record */
+  peppolOnlyAps: PeppolAp[];
 }
 
 export default function DashboardContent({
@@ -21,6 +23,7 @@ export default function DashboardContent({
   registeredCount,
   candidateCount,
   linkedPdpIds,
+  peppolOnlyAps,
 }: DashboardContentProps) {
   const { language } = useLanguage();
 
@@ -58,7 +61,7 @@ export default function DashboardContent({
         candidateCount={candidateCount}
       />
 
-      <PdpTable pdps={pdps} linkedPdpIds={linkedPdpIds} />
+      <PdpTable pdps={pdps} linkedPdpIds={linkedPdpIds} peppolOnlyAps={peppolOnlyAps} />
     </div>
   );
 }
