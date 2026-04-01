@@ -171,14 +171,14 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
               key={value}
               type="button"
               onClick={() => changeRegistryFilter(value)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-body font-semibold tracking-wide transition-all border ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-body font-semibold tracking-wide transition-all border ${
                 registryFilter === value
                   ? 'bg-accent/10 text-accent border-accent/30'
                   : 'bg-transparent text-navy/55 border-navy/20 hover:border-navy/40 hover:text-navy'
               }`}
             >
               {label}
-              <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full leading-none ${
+              <span className={`text-[10px] font-mono px-1.5 py-px rounded-full leading-none ${
                 registryFilter === value
                   ? 'bg-accent/15 text-accent'
                   : 'bg-navy/10 text-navy/40'
@@ -303,9 +303,9 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
                           {isLinked && (
                             <span
                               title={t(language, 'registryFilterBoth')}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap"
+                              className="inline-flex items-center px-1.5 py-px text-[10px] font-mono font-medium rounded-full whitespace-nowrap leading-tight"
+                              style={{ background: '#e6f4f4', color: '#2A7F7F', border: '1px solid #a8d5d5' }}
                             >
-                              <span>⇌</span>
                               {t(language, 'badgeBothRegistries')}
                             </span>
                           )}
