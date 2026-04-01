@@ -30,9 +30,39 @@ export interface ScraperResult {
   fetchedAt: string;
 }
 
+// ---------------------------------------------------------------------------
+// Peppol Access Point types
+// ---------------------------------------------------------------------------
+
+export interface PeppolApRecord {
+  name: string;
+  slug: string;
+  country?: string;
+  apCertified: boolean;
+  smpCertified: boolean;
+  /** PII — never log */
+  contactName?: string;
+  /** PII — never log */
+  contactEmail?: string;
+  /** Peppol Authority code, e.g. 'DGFIP', 'BOSA', 'AGID' */
+  authority?: string;
+}
+
+export interface PeppolApParserInterface {
+  parse(html: string): PeppolApRecord[] | Promise<PeppolApRecord[]>;
+}
+
+export interface PeppolApScraperResult {
+  records: PeppolApRecord[];
+  rawHtml: string;
+  /** ISO 8601 */
+  fetchedAt: string;
+}
+
 export class SafetyCheckError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'SafetyCheckError';
   }
 }
+

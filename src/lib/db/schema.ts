@@ -76,6 +76,50 @@ export const subscribers = pgTable('subscribers', {
 });
 
 // ---------------------------------------------------------------------------
+// peppol_aps — certified Peppol Access Points from peppol.org
+// ---------------------------------------------------------------------------
+export const peppolAps = pgTable('peppol_aps', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  slug: text('slug').notNull().unique(),
+  /** Country/territory of legal residence */
+  country: text('country'),
+  /** Is certified as an Access Point */
+  apCertified: boolean('ap_certified').notNull().default(false),
+  /** Is certified as a Service Metadata Publisher */
+  smpCertified: boolean('smp_certified').notNull().default(false),
+  /** PII — never logged */
+  contactName: text('contact_name'),
+  /** PII — never logged, never returned to clients */
+  contactEmail: text('contact_email'),
+  /** Peppol Authority code, e.g. 'DGFIP', 'BOSA', 'AGID', 'KoSIT' */
+  authority: text('authority'),
+  /** ISO 8601 — set on INSERT, immutable */
+  firstSeenAt: text('first_seen_at').notNull(),
+  /** ISO 8601 — updated on every scrape where AP appears */
+  lastSeenAt: text('last_seen_at').notNull(),
+  /** true = on registry; false = soft-deleted */
+  isActive: boolean('is_active').notNull().default(true),
+});
+
+// ---------------------------------------------------------------------------
+// cross_registry_links — fuzzy-matched links between pdps and peppol_aps
+// ---------------------------------------------------------------------------
+export const crossRegistryLinks = pgTable('cross_registry_links', {
+  id: serial('id').primaryKey(),
+  pdpId: integer('pdp_id')
+    .notNull()
+    .references(() => pdps.id),
+  peppolApId: integer('peppol_ap_id')
+    .notNull()
+    .references(() => peppolAps.id),
+  /** Normalised similarity score 0–100 */
+  matchScore: integer('match_score').notNull(),
+  /** ISO 8601 — when this match was computed */
+  matchedAt: text('matched_at').notNull(),
+});
+
+// ---------------------------------------------------------------------------
 // Inferred TypeScript types
 // ---------------------------------------------------------------------------
 export type Pdp = typeof pdps.$inferSelect;
@@ -86,3 +130,7 @@ export type ScrapeRun = typeof scrapeRuns.$inferSelect;
 export type NewScrapeRun = typeof scrapeRuns.$inferInsert;
 export type Subscriber = typeof subscribers.$inferSelect;
 export type NewSubscriber = typeof subscribers.$inferInsert;
+export type PeppolAp = typeof peppolAps.$inferSelect;
+export type NewPeppolAp = typeof peppolAps.$inferInsert;
+export type CrossRegistryLink = typeof crossRegistryLinks.$inferSelect;
+export type NewCrossRegistryLink = typeof crossRegistryLinks.$inferInsert;

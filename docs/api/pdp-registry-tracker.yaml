@@ -25,6 +25,8 @@ servers:
 tags:
   - name: pdps
     description: Current PDP registry — list and detail endpoints
+  - name: peppol-aps
+    description: Peppol certified Access Points from peppol.org
   - name: changes
     description: Change event history — additions, removals, and status changes
   - name: status
@@ -110,6 +112,79 @@ paths:
                   $ref: '#/components/examples/PdpDetailResponseExample'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ---------------------------------------------------------------------------
+  # Peppol APs
+  # ---------------------------------------------------------------------------
+
+  /api/v1/peppol-aps:
+    get:
+      tags: [peppol-aps]
+      summary: List certified Peppol Access Points
+      operationId: listPeppolAps
+      description: >
+        Returns the list of certified Peppol Access Points scraped from
+        `https://peppol.org/members/peppol-certified-service-providers/`.
+        PII fields (contactName, contactEmail) are never included in the response.
+        Use `authority=DGFIP` to scope results to the French regulatory perimeter —
+        the same set eligible for cross-registry matching with PA records.
+      parameters:
+        - name: country
+          in: query
+          required: false
+          description: Filter by country/territory of legal residence (case-sensitive).
+          schema:
+            type: string
+            example: France
+        - name: authority
+          in: query
+          required: false
+          description: Filter by Peppol Authority code (e.g. DGFIP, BOSA, AGID).
+          schema:
+            type: string
+            example: DGFIP
+      responses:
+        '200':
+          description: Successful response — list of Peppol APs
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: public, max-age=300
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeppolApListResponse'
+              examples:
+                default:
+                  $ref: '#/components/examples/PeppolApListResponseExample'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/admin/trigger-peppol-ap-scrape:
+    post:
+      tags: [admin]
+      summary: Trigger an immediate Peppol AP scrape run
+      operationId: triggerPeppolApScrape
+      description: >
+        Triggers a full Peppol AP scrape cycle immediately, including cross-registry matching.
+        Protected by the same `ADMIN_SCRAPE_TOKEN` Bearer token as the PA scrape endpoint.
+        Returns `409 Conflict` if a scrape is already in progress.
+      security:
+        - AdminBearerToken: []
+      responses:
+        '202':
+          description: Peppol AP scrape accepted and triggered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerScrapeResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -574,6 +649,87 @@ components:
             `true` if the PDP is currently on the registry; `false` if it has been removed
             (soft-deleted). Removed PDPs are retained for historical reference.
           example: true
+
+    PeppolAp:
+      type: object
+      description: A certified Peppol Access Point from the OpenPeppol members list.
+      required:
+        - id
+        - name
+        - slug
+        - apCertified
+        - smpCertified
+        - firstSeenAt
+        - lastSeenAt
+        - isActive
+      properties:
+        id:
+          type: integer
+          description: Internal database identifier.
+          example: 1
+        name:
+          type: string
+          description: Company name as published on the Peppol certified service providers page.
+          example: Cegid
+        slug:
+          type: string
+          description: URL-safe identifier derived from the company name.
+          example: cegid
+        country:
+          type: ['string', 'null']
+          description: Country/territory of legal residence (not area of operations).
+          example: France
+        apCertified:
+          type: boolean
+          description: Is certified as a Peppol Access Point.
+          example: true
+        smpCertified:
+          type: boolean
+          description: Is certified as a Service Metadata Publisher.
+          example: true
+        authority:
+          type: ['string', 'null']
+          description: Peppol Authority code responsible for this service provider (e.g. DGFIP, BOSA).
+          example: DGFIP
+        firstSeenAt:
+          type: string
+          format: date-time
+          description: UTC timestamp when this AP was first scraped.
+          example: '2026-03-30T08:00:00Z'
+        lastSeenAt:
+          type: string
+          format: date-time
+          description: UTC timestamp of the most recent scrape where this AP appeared.
+          example: '2026-03-30T08:00:00Z'
+        isActive:
+          type: boolean
+          description: false if the AP was removed from the Peppol registry (soft-deleted).
+          example: true
+
+    PeppolApListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PeppolAp'
+        meta:
+          type: object
+          required:
+            - total
+          properties:
+            total:
+              type: integer
+              description: Total number of APs returned.
+              example: 2
+            lastUpdated:
+              type: ['string', 'null']
+              format: date-time
+              description: ISO 8601 timestamp of the most recently updated AP record.
+              example: '2026-03-30T08:00:00Z'
 
     PdpWithHistory:
       allOf:
@@ -1138,3 +1294,31 @@ components:
       summary: Valid subscription request
       value:
         email: user@example.com
+
+    PeppolApListResponseExample:
+      summary: Peppol APs filtered by authority=DGFIP
+      value:
+        data:
+          - id: 1
+            name: Cegid
+            slug: cegid
+            country: France
+            apCertified: true
+            smpCertified: true
+            authority: DGFIP
+            firstSeenAt: '2026-03-30T08:00:00Z'
+            lastSeenAt: '2026-03-30T08:00:00Z'
+            isActive: true
+          - id: 2
+            name: Esker S.A.
+            slug: esker-sa
+            country: France
+            apCertified: true
+            smpCertified: true
+            authority: DGFIP
+            firstSeenAt: '2026-03-30T08:00:00Z'
+            lastSeenAt: '2026-03-30T08:00:00Z'
+            isActive: true
+        meta:
+          total: 2
+          lastUpdated: '2026-03-30T08:00:00Z'

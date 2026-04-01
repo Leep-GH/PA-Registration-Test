@@ -9,6 +9,7 @@ import type { Pdp } from '@/lib/db/schema';
 type SortKey = 'name' | 'status' | 'registrationDate' | 'firstSeenAt';
 type SortDir = 'asc' | 'desc';
 type StatusFilter = 'all' | 'registered' | 'candidate' | 'removed';
+type RegistryFilter = 'all' | 'pa' | 'peppol_ap' | 'both';
 
 const PAGE_SIZE = 25;
 
@@ -20,13 +21,18 @@ const STATUS_BADGE: Record<string, string> = {
 
 interface Props {
   pdps: Pdp[];
+  /** Set of pdpIds that also appear in the Peppol AP registry */
+  linkedPdpIds?: Set<number>;
+  /** Set of peppolApIds: used when registryFilter='peppol_ap' or 'both' */
+  peppolApIds?: Set<number>;
 }
 
-export default function PdpTable({ pdps }: Props) {
+export default function PdpTable({ pdps, linkedPdpIds = new Set() }: Props) {
   const { language } = useLanguage();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [registryFilter, setRegistryFilter] = useState<RegistryFilter>('all');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [hoveredHeader, setHoveredHeader] = useState<string | null>(null);
@@ -47,6 +53,11 @@ export default function PdpTable({ pdps }: Props) {
     setPage(1);
   }
 
+  function changeRegistryFilter(r: RegistryFilter) {
+    setRegistryFilter(r);
+    setPage(1);
+  }
+
   function changeSearch(q: string) {
     setSearch(q);
     setPage(1);
@@ -55,7 +66,16 @@ export default function PdpTable({ pdps }: Props) {
   const filtered = useMemo(() => {
     return pdps
       .filter((p) => {
+        // Status filter
         if (statusFilter !== 'all' && p.status !== statusFilter) return false;
+
+        // Registry filter
+        const isLinked = linkedPdpIds.has(p.id);
+        if (registryFilter === 'pa' && isLinked) return false;       // PA-only: exclude linked
+        if (registryFilter === 'peppol_ap') return false;             // Peppol-only: no PA rows
+        if (registryFilter === 'both' && !isLinked) return false;     // Both: only show linked
+
+        // Search
         if (search) {
           const q = search.toLowerCase();
           return (
@@ -83,7 +103,7 @@ export default function PdpTable({ pdps }: Props) {
         }
         return sortDir === 'asc' ? cmp : -cmp;
       });
-  }, [pdps, statusFilter, search, sortKey, sortDir]);
+  }, [pdps, statusFilter, registryFilter, linkedPdpIds, search, sortKey, sortDir]);
 
   const totalPages = useMemo(() => {
     return Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -109,10 +129,18 @@ export default function PdpTable({ pdps }: Props) {
     return status;
   }
 
+  const registryOptions: { value: RegistryFilter; label: string }[] = [
+    { value: 'all',       label: t(language, 'registryFilterAll') },
+    { value: 'pa',        label: t(language, 'registryFilterPa') },
+    { value: 'peppol_ap', label: t(language, 'registryFilterPeppolAp') },
+    { value: 'both',      label: t(language, 'registryFilterBoth') },
+  ];
+
   return (
     <div className="space-y-4">
       {/* Controls */}
-      <div className="flex flex-wrap gap-3 items-center">
+      <div className="flex flex-wrap gap-3 items-start">
+        {/* Status tabs */}
         <div className="flex gap-1">
           {(['all', 'registered', 'candidate', 'removed'] as StatusFilter[]).map((s) => (
             <button
@@ -128,6 +156,40 @@ export default function PdpTable({ pdps }: Props) {
             </button>
           ))}
         </div>
+
+        {/* Registry multi-select checkboxes */}
+        <div className="flex items-center gap-3 ml-4 flex-wrap">
+          <span className="text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest">
+            {t(language, 'registryFilterLabel')}
+          </span>
+          {registryOptions.map(({ value, label }) => (
+            <label
+              key={value}
+              className="flex items-center gap-1.5 cursor-pointer select-none"
+            >
+              <input
+                type="radio"
+                name="registry-filter"
+                checked={registryFilter === value}
+                onChange={() => changeRegistryFilter(value)}
+                className="accent-accent w-3.5 h-3.5"
+              />
+              <span
+                className={`text-sm font-body transition-colors ${
+                  registryFilter === value ? 'text-accent font-medium' : 'text-navy/60'
+                }`}
+              >
+                {label}
+              </span>
+              {value === 'both' && linkedPdpIds.size > 0 && (
+                <span className="ml-0.5 px-1.5 py-0.5 text-[10px] rounded-full bg-accent/10 text-accent font-mono">
+                  {linkedPdpIds.size}
+                </span>
+              )}
+            </label>
+          ))}
+        </div>
+
         <input
           type="search"
           placeholder={t(language, 'tableSearch')}
@@ -186,58 +248,72 @@ export default function PdpTable({ pdps }: Props) {
                 </td>
               </tr>
             ) : (
-              paginated.map((pdp) => (
-                <tr key={pdp.id} className="border-b border-navy/5 hover:bg-navy/[0.03] transition-colors cursor-pointer">
-                  <td className="px-3 py-2.5 font-medium">
-                    <Link
-                      href={`/pdp/${pdp.slug}`}
-                      className="text-accent underline hover:text-accent/80 transition-colors font-semibold"
-                    >
-                      {pdp.name}
-                    </Link>
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <div
-                      className="relative inline-block"
-                      onMouseEnter={() => setHoveredStatusCell(`${pdp.id}`)}
-                      onMouseLeave={() => setHoveredStatusCell(null)}
-                    >
-                      <span
-                        className={
-                          STATUS_BADGE[pdp.status] ?? 'status-badge border-l-gray-400 text-gray-600'
-                        }
+              paginated.map((pdp) => {
+                const isLinked = linkedPdpIds.has(pdp.id);
+                return (
+                  <tr key={pdp.id} className="border-b border-navy/5 hover:bg-navy/[0.03] transition-colors cursor-pointer">
+                    <td className="px-3 py-2.5 font-medium">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Link
+                          href={`/pdp/${pdp.slug}`}
+                          className="text-accent underline hover:text-accent/80 transition-colors font-semibold"
+                        >
+                          {pdp.name}
+                        </Link>
+                        {isLinked && (
+                          <span
+                            title={t(language, 'registryFilterBoth')}
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap"
+                          >
+                            <span>⇌</span>
+                            {t(language, 'badgeBothRegistries')}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <div
+                        className="relative inline-block"
+                        onMouseEnter={() => setHoveredStatusCell(`${pdp.id}`)}
+                        onMouseLeave={() => setHoveredStatusCell(null)}
                       >
-                        {getStatusLabel(pdp.status)}
-                      </span>
-                      {pdp.statusText && hoveredStatusCell === `${pdp.id}` && (
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-navy text-cream text-[10px] font-normal whitespace-nowrap rounded z-10 pointer-events-none">
-                          {pdp.statusText}
-                        </div>
+                        <span
+                          className={
+                            STATUS_BADGE[pdp.status] ?? 'status-badge border-l-gray-400 text-gray-600'
+                          }
+                        >
+                          {getStatusLabel(pdp.status)}
+                        </span>
+                        {pdp.statusText && hoveredStatusCell === `${pdp.id}` && (
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-navy text-cream text-[10px] font-normal whitespace-nowrap rounded z-10 pointer-events-none">
+                            {pdp.statusText}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
+                      {pdp.registrationDate ?? '—'}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {pdp.websiteUrl ? (
+                        <a
+                          href={pdp.websiteUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-accent hover:underline text-xs font-mono truncate block max-w-[160px]"
+                        >
+                          {pdp.websiteUrl.replace(/^https?:\/\//, '')}
+                        </a>
+                      ) : (
+                        <span className="text-navy/20">—</span>
                       )}
-                    </div>
-                  </td>
-                  <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
-                    {pdp.registrationDate ?? '—'}
-                  </td>
-                  <td className="px-3 py-2.5">
-                    {pdp.websiteUrl ? (
-                      <a
-                        href={pdp.websiteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-accent hover:underline text-xs font-mono truncate block max-w-[160px]"
-                      >
-                        {pdp.websiteUrl.replace(/^https?:\/\//, '')}
-                      </a>
-                    ) : (
-                      <span className="text-navy/20">—</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
-                    {new Date(pdp.firstSeenAt).toLocaleDateString('fr-FR')}
-                  </td>
-                </tr>
-              ))
+                    </td>
+                    <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
+                      {new Date(pdp.firstSeenAt).toLocaleDateString('fr-FR')}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

@@ -10,6 +10,24 @@
  * Exit code 0 on success or no_change, 1 on failure.
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Load .env.local if it exists (development)
+const envLocalPath = path.join(process.cwd(), '.env.local');
+if (fs.existsSync(envLocalPath)) {
+  const content = fs.readFileSync(envLocalPath, 'utf-8');
+  content.split('\n').forEach((line) => {
+    const [key, ...valueParts] = line.split('=');
+    if (key && !key.startsWith('#') && valueParts.length > 0) {
+      const value = valueParts.join('=').trim();
+      if (value && !process.env[key.trim()]) {
+        process.env[key.trim()] = value;
+      }
+    }
+  });
+}
+
 import { runScrape } from '../src/lib/scraper/index';
 
 async function main() {

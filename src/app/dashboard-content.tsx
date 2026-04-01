@@ -11,6 +11,8 @@ interface DashboardContentProps {
   lastRun: { runAt: string } | null;
   registeredCount: number;
   candidateCount: number;
+  /** Set of pdpIds that also appear in the Peppol AP registry */
+  linkedPdpIds: Set<number>;
 }
 
 export default function DashboardContent({
@@ -18,6 +20,7 @@ export default function DashboardContent({
   lastRun,
   registeredCount,
   candidateCount,
+  linkedPdpIds,
 }: DashboardContentProps) {
   const { language } = useLanguage();
 
@@ -55,7 +58,8 @@ export default function DashboardContent({
         candidateCount={candidateCount}
       />
 
-      <PdpTable pdps={pdps} />
+      <PdpTable pdps={pdps} linkedPdpIds={linkedPdpIds} />
     </div>
   );
 }
+

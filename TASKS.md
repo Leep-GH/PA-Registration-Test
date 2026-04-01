@@ -1,7 +1,7 @@
 # TASKS.md — PDP Registry Tracker
 
 **Project:** PDP Registry Tracker
-**Last updated:** 2026-03-26
+**Last updated:** 2026-03-30
 **Architecture complete:** ✅
 
 > Status legend: `TODO` | `IN PROGRESS` | `BLOCKED` | `DONE`
@@ -166,3 +166,33 @@
 | **Phase 1 → Phase 2** | Dashboard renders real data from at least one successful scrape run | ⏳ PENDING — requires first live scrape run post-deployment |
 | **Phase 2 → Phase 3** | RSS feed serving, dead man's switch tested in staging | ⏳ PENDING — requires deployment |
 | **Phase 4 production** | PostgreSQL migration verified; deployed to Vercel; GitHub Secrets configured | ⏳ PENDING — deployment operations (manual) |
+| **Peppol AP gate** | Peppol AP URL confirmed; scraper returns ≥50 records; migration deployed | ⏳ PENDING — requires live scrape run |
+
+---
+
+## Phase 5 — Peppol AP Integration (2026-03-30)
+
+| Task | Phase | Status | Owner | Notes |
+|------|-------|--------|-------|-------|
+| ✅ Confirm Peppol AP data source URL and HTML structure | 5 | DONE | Developer | URL: https://peppol.org/members/peppol-certified-service-providers/ — server-rendered DataTables. 7 columns confirmed. See ADR-003. |
+| ✅ Write ADR-003: Peppol AP integration | 5 | DONE | Architect | `docs/decisions/003-peppol-ap-integration.md` |
+| ✅ Add `peppol_aps` and `cross_registry_links` tables to DB schema | 5 | DONE | Developer | `src/lib/db/schema.ts` |
+| ✅ Create migration `0003_peppol_ap_integration.sql` | 5 | DONE | Developer | `src/lib/db/migrations/0003_peppol_ap_integration.sql` |
+| ✅ Add `PeppolApRecord` and `PeppolApParserInterface` types | 5 | DONE | Developer | `src/lib/scraper/types.ts` |
+| ✅ Implement `PeppolApParser` (Cheerio-based) | 5 | DONE | Developer | `src/lib/scraper/peppol-ap-parser.ts` |
+| ✅ Implement `peppol-aps` repository | 5 | DONE | Developer | `src/lib/db/repositories/peppol-aps.ts` |
+| ✅ Implement `cross-registry-links` repository | 5 | DONE | Developer | `src/lib/db/repositories/cross-registry-links.ts` |
+| ✅ Implement fuzzy cross-registry matching service | 5 | DONE | Developer | `src/lib/cross-registry/index.ts` — Jaccard token-overlap, threshold 75/100, DGFIP-only |
+| ✅ Implement `runPeppolApScrape()` orchestrator | 5 | DONE | Developer | `src/lib/scraper/peppol-ap-index.ts` |
+| ✅ Add `GET /api/v1/peppol-aps` route (PII stripped) | 5 | DONE | Developer | `src/app/api/v1/peppol-aps/route.ts` |
+| ✅ Add `POST /api/admin/trigger-peppol-ap-scrape` route | 5 | DONE | Developer | `src/app/api/admin/trigger-peppol-ap-scrape/route.ts` |
+| ✅ Update `pdp-table.tsx`: registry radio filter + Both badge | 5 | DONE | Developer | `src/components/pdp-table.tsx` — radio group: All / PA / Peppol AP / Both |
+| ✅ Update `dashboard-content.tsx` + `page.tsx`: pass linkedPdpIds | 5 | DONE | Developer | `src/app/dashboard-content.tsx`, `src/app/page.tsx` |
+| ✅ Add i18n keys for registry filter and badges | 5 | DONE | Developer | `src/lib/i18n.ts` — EN + FR |
+| ✅ Update OpenAPI spec: add peppol-aps tag, paths, schemas | 5 | DONE | Developer | `docs/api/pdp-registry-tracker.yaml` |
+| Run database migration against staging DB | 5 | TODO | Developer | `psql $DATABASE_URL -f src/lib/db/migrations/0003_peppol_ap_integration.sql` |
+| Trigger first Peppol AP scrape via admin endpoint | 5 | TODO | Developer | `POST /api/admin/trigger-peppol-ap-scrape` with `ADMIN_SCRAPE_TOKEN` |
+| Verify cross-registry matching results in staging | 5 | TODO | Developer | Query `cross_registry_links`; manually review top 10 matched pairs |
+| Write unit tests — `PeppolApParser` | 5 | DONE | QA Engineer | `src/lib/scraper/__tests__/peppol-ap-parser.test.ts` — 15 tests. 94.28% stmt / 84.61% branch. |
+| Write unit tests — `normalizeName()` + `similarityScore()` | 5 | DONE | QA Engineer | `src/lib/cross-registry/__tests__/index.test.ts` — 18 tests for pure functions. |
+| Write integration test — `GET /api/v1/peppol-aps` | 5 | TODO | QA Engineer | Assert PII fields absent from response; assert country/authority filters work |

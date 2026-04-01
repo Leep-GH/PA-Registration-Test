@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getAllPdps } from '@/lib/db/repositories/pdps';
 import { getLastSuccessfulRun } from '@/lib/db/repositories/runs';
+import { getLinkedPdpIds } from '@/lib/db/repositories/cross-registry-links';
 import DashboardContent from '@/app/dashboard-content';
 
 export const metadata: Metadata = {
@@ -15,6 +16,7 @@ export const revalidate = 3600;
 export default async function DashboardPage() {
   let allPdps = await getAllPdps().catch(() => []);
   const lastRun = await getLastSuccessfulRun().catch(() => null);
+  const linkedPdpIds = await getLinkedPdpIds().catch(() => new Set<number>());
 
   const registeredCount = allPdps.filter((p) => p.status === 'registered' && p.isActive).length;
   const candidateCount = allPdps.filter((p) => p.status === 'candidate' && p.isActive).length;
@@ -25,6 +27,8 @@ export default async function DashboardPage() {
       lastRun={lastRun}
       registeredCount={registeredCount}
       candidateCount={candidateCount}
+      linkedPdpIds={linkedPdpIds}
     />
   );
 }
+

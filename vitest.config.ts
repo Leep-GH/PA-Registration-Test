@@ -13,6 +13,7 @@ export default defineConfig({
         'src/lib/scraper/index.ts', // Orchestrator requires full DB + network — integration scope
         'src/lib/scraper/playwright.ts', // Browser automation — integration scope
         'src/lib/notifications/interface.ts', // Pure TypeScript interface — no executable code
+        'src/lib/i18n.ts',          // Translation dictionary — pure data file, no business logic
       ],
       thresholds: {
         lines: 80,

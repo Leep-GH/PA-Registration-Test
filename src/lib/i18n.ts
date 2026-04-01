@@ -78,6 +78,18 @@ export const translations = {
     // Footer
     footerDisclaimer: 'Unofficial tracker — data source:',
     footerPrivacy: 'Privacy Policy',
+
+    // Registry filter
+    registryFilterLabel: 'Registry',
+    registryFilterAll: 'All registries',
+    registryFilterPa: 'PA (DGFiP)',
+    registryFilterPeppolAp: 'Peppol AP',
+    registryFilterBoth: 'Both registries',
+    badgePeppolAp: 'Peppol AP',
+    badgeBothRegistries: 'Both',
+    peppolApCountry: 'Country',
+    peppolApAuthority: 'Authority',
+    peppolApCertifications: 'Certifications',
   },
   fr: {
     // Header
@@ -155,6 +167,18 @@ export const translations = {
     // Footer
     footerDisclaimer: 'Tracker non officiel — données source :',
     footerPrivacy: 'Politique de confidentialité',
+
+    // Registry filter
+    registryFilterLabel: 'Registre',
+    registryFilterAll: 'Tous les registres',
+    registryFilterPa: 'PA (DGFiP)',
+    registryFilterPeppolAp: 'Peppol AP',
+    registryFilterBoth: 'Les deux registres',
+    badgePeppolAp: 'Peppol AP',
+    badgeBothRegistries: 'Les deux',
+    peppolApCountry: 'Pays',
+    peppolApAuthority: 'Autorité',
+    peppolApCertifications: 'Certifications',
   },
 } as const;
 
