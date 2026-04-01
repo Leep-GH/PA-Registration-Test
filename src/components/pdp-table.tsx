@@ -71,9 +71,9 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set() }: Props) {
 
         // Registry filter
         const isLinked = linkedPdpIds.has(p.id);
-        if (registryFilter === 'pa' && isLinked) return false;       // PA-only: exclude linked
-        if (registryFilter === 'peppol_ap') return false;             // Peppol-only: no PA rows
-        if (registryFilter === 'both' && !isLinked) return false;     // Both: only show linked
+        if (registryFilter === 'pa' && isLinked) return false;          // PA-only: exclude linked
+        if (registryFilter === 'peppol_ap' && !isLinked) return false;  // Peppol AP: only show certified
+        if (registryFilter === 'both' && !isLinked) return false;       // Both: only show linked
 
         // Search
         if (search) {
