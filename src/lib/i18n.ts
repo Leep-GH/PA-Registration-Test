@@ -78,7 +78,7 @@ export const translations = {
     detailEventStatusChanged: 'Status changed',
     
     // Footer
-    footerDisclaimer: 'Unofficial tracker — data source:',
+    footerDisclaimer: 'Unofficial tracker — data sources:',
     footerPrivacy: 'Privacy Policy',
 
     // Registry filter
@@ -173,7 +173,7 @@ export const translations = {
     detailEventStatusChanged: 'Changement',
     
     // Footer
-    footerDisclaimer: 'Tracker non officiel — données source :',
+    footerDisclaimer: 'Tracker non officiel — sources :',
     footerPrivacy: 'Politique de confidentialité',
 
     // Registry filter

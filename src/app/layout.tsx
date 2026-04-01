@@ -77,7 +77,7 @@ export default function RootLayout({
 
           <footer className="hr-rule mt-16 py-8 text-center text-xs text-navy/40 font-mono">
             <p>
-              Unofficial tracker — data source:{' '}
+              Unofficial tracker — data sources:{' '}
               <a
                 href="https://www.impots.gouv.fr"
                 target="_blank"
@@ -85,6 +85,15 @@ export default function RootLayout({
                 className="text-accent hover:underline"
               >
                 impots.gouv.fr
+              </a>
+              {' · '}
+              <a
+                href="https://peppol.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent hover:underline"
+              >
+                peppol.org
               </a>
             </p>
             <p className="mt-2">
