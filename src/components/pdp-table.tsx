@@ -142,20 +142,55 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="card overflow-hidden">
       {/* Controls */}
-      <div className="flex flex-wrap gap-3 items-start">
+      <div className="p-5 pb-0 space-y-4">
+        <div className="flex flex-wrap gap-3 items-center justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Registry filter chips */}
+            {registryOptions.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => changeRegistryFilter(value)}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-body font-semibold transition-all ${
+                  registryFilter === value
+                    ? 'bg-accent text-white shadow-sm'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-navy'
+                }`}
+              >
+                {label}
+                <span className={`text-[10px] font-mono px-1.5 py-px rounded-md leading-none ${
+                  registryFilter === value
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-200/80 text-slate-500'
+                }`}>
+                  {filterCounts[value]}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <input
+            type="search"
+            placeholder={t(language, 'tableSearch')}
+            value={search}
+            onChange={(e) => changeSearch(e.target.value)}
+            className="border border-slate-200 bg-white rounded-lg px-3.5 py-2 text-sm font-body focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent placeholder:text-slate-400 w-48"
+          />
+        </div>
+
         {/* Status tabs — hidden in Peppol-only mode */}
         {registryFilter !== 'peppol_ap' && (
-          <div className="flex gap-1">
+          <div className="flex gap-1 border-b border-slate-200 -mx-5 px-5">
             {(['all', 'registered', 'candidate', 'removed'] as StatusFilter[]).map((s) => (
               <button
                 key={s}
                 onClick={() => changeStatusFilter(s)}
-                className={`px-4 py-3 min-h-[44px] text-sm font-body font-medium uppercase tracking-wide transition-colors cursor-pointer select-none ${
+                className={`px-4 py-2.5 text-sm font-body font-medium transition-colors cursor-pointer select-none border-b-2 -mb-px ${
                   statusFilter === s
-                    ? 'text-accent border-b-2 border-accent'
-                    : 'text-navy/55 hover:text-navy'
+                    ? 'text-accent border-accent'
+                    : 'text-slate-500 border-transparent hover:text-navy hover:border-slate-300'
                 }`}
               >
                 {s === 'all' ? t(language, 'tableStatusFilter') : getStatusLabel(s)}
@@ -164,45 +199,12 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
           </div>
         )}
 
-        {/* Registry filter chips */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {registryOptions.map(({ value, label }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => changeRegistryFilter(value)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-body font-semibold tracking-wide transition-all border ${
-                registryFilter === value
-                  ? 'bg-accent/10 text-accent border-accent/30'
-                  : 'bg-transparent text-navy/55 border-navy/20 hover:border-navy/40 hover:text-navy'
-              }`}
-            >
-              {label}
-              <span className={`text-[10px] font-mono px-1.5 py-px rounded-full leading-none ${
-                registryFilter === value
-                  ? 'bg-accent/15 text-accent'
-                  : 'bg-navy/10 text-navy/40'
-              }`}>
-                {filterCounts[value]}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        <input
-          type="search"
-          placeholder={t(language, 'tableSearch')}
-          value={search}
-          onChange={(e) => changeSearch(e.target.value)}
-          className="ml-auto border border-navy/15 bg-cream rounded px-3 py-1.5 text-sm font-body focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent placeholder:text-navy/30"
-        />
+        <p className="text-xs font-body font-medium text-slate-400 pb-2">
+          {registryFilter === 'peppol_ap'
+            ? t(language, 'tablePlatforms', filteredPeppolAps.length)
+            : t(language, statusFilter === 'registered' ? 'tablePlatformsApproved' : 'tablePlatforms', filteredPdps.length)}
+        </p>
       </div>
-
-      <p className="text-xs font-mono text-navy/40 uppercase tracking-wider">
-        {registryFilter === 'peppol_ap'
-          ? t(language, 'tablePlatforms', filteredPeppolAps.length)
-          : t(language, statusFilter === 'registered' ? 'tablePlatformsApproved' : 'tablePlatforms', filteredPdps.length)}
-      </p>
 
       {/* Table */}
       <div className="overflow-x-auto">
@@ -210,38 +212,38 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
           /* Peppol-only table */
           <table className="w-full text-sm font-body">
             <thead>
-              <tr className="border-b-2 border-navy/10">
-                <th className="px-3 py-2.5 text-left text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest">{t(language, 'tableColName')}</th>
-                <th className="px-3 py-2.5 text-left text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest">{t(language, 'peppolApCountry')}</th>
-                <th className="px-3 py-2.5 text-left text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest">{t(language, 'peppolApCertifications')}</th>
+              <tr className="border-b border-slate-200 bg-slate-50/50">
+                <th className="px-5 py-3 text-left text-[11px] font-body font-semibold text-slate-500 uppercase tracking-wider">{t(language, 'tableColName')}</th>
+                <th className="px-5 py-3 text-left text-[11px] font-body font-semibold text-slate-500 uppercase tracking-wider">{t(language, 'peppolApCountry')}</th>
+                <th className="px-5 py-3 text-left text-[11px] font-body font-semibold text-slate-500 uppercase tracking-wider">{t(language, 'peppolApCertifications')}</th>
               </tr>
             </thead>
             <tbody key={`page-peppol-${safePage}`} className="transition-opacity duration-150 ease-in-out">
               {(paginated as PeppolAp[]).length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-3 py-8 text-center text-navy/40 font-body">
+                  <td colSpan={3} className="px-5 py-8 text-center text-slate-400 font-body">
                     {t(language, 'tableNoResults')}
                   </td>
                 </tr>
               ) : (
                 (paginated as PeppolAp[]).map((ap) => (
-                  <tr key={ap.id} className="border-b border-navy/5 hover:bg-navy/[0.03] transition-colors">
-                    <td className="px-3 py-2.5 font-medium">
+                  <tr key={ap.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                    <td className="px-5 py-3.5 font-medium">
                       <Link
                         href={`/peppol/${ap.slug}`}
-                        className="text-accent underline hover:text-accent/80 transition-colors font-semibold"
+                        className="text-accent hover:text-accent-hover transition-colors font-semibold"
                       >
                         {ap.name}
                       </Link>
                     </td>
-                    <td className="px-3 py-2.5 text-sm text-navy/60">{ap.country ?? '—'}</td>
-                    <td className="px-3 py-2.5">
+                    <td className="px-5 py-3.5 text-sm text-slate-500">{ap.country ?? '—'}</td>
+                    <td className="px-5 py-3.5">
                       <div className="flex gap-1.5">
                         {ap.apCertified && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-200">AP</span>
+                          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-body font-semibold rounded-md bg-blue-50 text-blue-700">AP</span>
                         )}
                         {ap.smpCertified && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-purple-50 text-purple-700 border border-purple-200">SMP</span>
+                          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-body font-semibold rounded-md bg-purple-50 text-purple-700">SMP</span>
                         )}
                       </div>
                     </td>
@@ -254,7 +256,7 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
           /* PA (DGFiP) table */
           <table className="w-full text-sm font-body">
             <thead>
-              <tr className="border-b-2 border-navy/10">
+              <tr className="border-b border-slate-200 bg-slate-50/50">
                 {(
                   [
                     { key: 'name' as SortKey, label: t(language, 'tableColName') },
@@ -266,7 +268,7 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
                 ).map(({ key, label }) => (
                   <th
                     key={label}
-                    className={`relative px-3 py-2.5 text-left text-[11px] font-body font-semibold text-navy/50 uppercase tracking-widest whitespace-nowrap ${
+                    className={`relative px-5 py-3 text-left text-[11px] font-body font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap ${
                       key ? 'cursor-pointer hover:text-navy select-none' : ''
                     }`}
                     onClick={() => key && handleSort(key)}
@@ -276,7 +278,7 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
                     {label}
                     {key && <SortArrow col={key} />}
                     {key === 'firstSeenAt' && hoveredHeader === 'firstSeenAt' && (
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-navy text-cream text-[10px] font-normal whitespace-nowrap rounded z-10 pointer-events-none">
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1.5 bg-navy text-white text-[10px] font-normal whitespace-nowrap rounded-lg z-10 pointer-events-none shadow-lg">
                         {t(language, 'tooltipFirstTracked')}
                       </div>
                     )}
@@ -290,7 +292,7 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
             >
               {filteredPdps.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-8 text-center text-navy/40 font-body">
+                  <td colSpan={5} className="px-5 py-8 text-center text-slate-400 font-body">
                     {t(language, 'tableNoResults')}
                   </td>
                 </tr>
@@ -298,31 +300,28 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
                 (paginated as Pdp[]).map((pdp) => {
                   const isLinked = linkedPdpIds.has(pdp.id);
                   return (
-                    <tr key={pdp.id} className="border-b border-navy/5 hover:bg-navy/[0.03] transition-colors cursor-pointer">
-                      <td className="px-3 py-2.5 font-medium">
+                    <tr key={pdp.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                      <td className="px-5 py-3.5 font-medium">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Link
                             href={`/pdp/${pdp.slug}`}
-                            className="text-accent underline hover:text-accent/80 transition-colors font-semibold"
+                            className="text-accent hover:text-accent-hover transition-colors font-semibold"
                           >
                             {pdp.name}
                           </Link>
                           {isLinked && (
                             <span className="relative group inline-flex">
-                              <span
-                                className="inline-flex items-center px-1.5 py-px text-[10px] font-mono font-medium rounded-full whitespace-nowrap leading-tight cursor-default"
-                                style={{ background: '#e6f4f4', color: '#2A7F7F', border: '1px solid #a8d5d5' }}
-                              >
+                              <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-body font-semibold rounded-md bg-teal-50 text-teal-700 whitespace-nowrap leading-tight cursor-default">
                                 {t(language, 'badgeBothRegistries')}
                               </span>
-                              <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-navy text-cream text-[10px] font-normal rounded z-20 w-56 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                              <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-navy text-white text-[10px] font-normal rounded-lg z-20 w-56 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg">
                                 {t(language, 'badgeBothTooltip')}
                               </span>
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="px-3 py-2.5">
+                      <td className="px-5 py-3.5">
                         <div
                           className="relative inline-block"
                           onMouseEnter={() => setHoveredStatusCell(`${pdp.id}`)}
@@ -330,36 +329,36 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
                         >
                           <span
                             className={
-                              STATUS_BADGE[pdp.status] ?? 'status-badge border-l-gray-400 text-gray-600'
+                              STATUS_BADGE[pdp.status] ?? 'status-badge bg-gray-50 text-gray-600'
                             }
                           >
                             {getStatusLabel(pdp.status)}
                           </span>
                           {pdp.statusText && hoveredStatusCell === `${pdp.id}` && (
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-navy text-cream text-[10px] font-normal whitespace-nowrap rounded z-10 pointer-events-none">
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-navy text-white text-[10px] font-normal whitespace-nowrap rounded-lg z-10 pointer-events-none shadow-lg">
                               {pdp.statusText}
                             </div>
                           )}
                         </div>
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
+                      <td className="px-5 py-3.5 text-sm text-slate-500 whitespace-nowrap">
                         {pdp.registrationDate ?? '—'}
                       </td>
-                      <td className="px-3 py-2.5">
+                      <td className="px-5 py-3.5">
                         {pdp.websiteUrl ? (
                           <a
                             href={pdp.websiteUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-accent hover:underline text-xs font-mono truncate block max-w-[160px]"
+                            className="text-accent hover:text-accent-hover text-sm truncate block max-w-[180px] transition-colors"
                           >
                             {pdp.websiteUrl.replace(/^https?:\/\//, '')}
                           </a>
                         ) : (
-                          <span className="text-navy/20">—</span>
+                          <span className="text-slate-300">—</span>
                         )}
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-xs text-navy/50 whitespace-nowrap">
+                      <td className="px-5 py-3.5 text-sm text-slate-500 whitespace-nowrap">
                         {new Date(pdp.firstSeenAt).toLocaleDateString('fr-FR')}
                       </td>
                     </tr>
@@ -373,21 +372,21 @@ export default function PdpTable({ pdps, linkedPdpIds = new Set(), peppolOnlyAps
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center justify-between px-5 py-4 border-t border-slate-200">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={safePage === 1}
-            className="px-4 py-2 text-sm font-body font-medium text-navy/70 border border-navy/15 rounded hover:border-navy/35 hover:text-navy disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 text-sm font-body font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-navy disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
             {t(language, 'paginationPrevious')}
           </button>
-          <span className="text-xs font-mono text-navy/50 uppercase tracking-wider" key={`pg-${safePage}`}>
+          <span className="text-xs font-body font-medium text-slate-400" key={`pg-${safePage}`}>
             {t(language, 'paginationPage', safePage, totalPages)}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={safePage === totalPages}
-            className="px-4 py-2 text-sm font-body font-medium text-navy/70 border border-navy/15 rounded hover:border-navy/35 hover:text-navy disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 text-sm font-body font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-navy disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
             {t(language, 'paginationNext')}
           </button>

@@ -8,28 +8,32 @@
   }
 
   h1, h2, h3, h4 {
-    @apply font-display;
+    @apply font-display font-bold tracking-tight;
   }
 }
 
 @layer components {
   .hr-rule {
-    @apply border-t border-navy/10;
+    @apply border-t border-slate-200;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl border border-slate-200/80 shadow-card;
   }
 
   .status-badge {
-    @apply inline-flex items-center text-[10px] font-mono font-medium uppercase tracking-widest pl-2 border-l-2;
+    @apply inline-flex items-center px-2.5 py-1 text-[11px] font-body font-semibold rounded-full;
   }
 
   .status-badge-registered {
-    @apply status-badge border-l-emerald-600 text-emerald-700;
+    @apply status-badge bg-emerald-50 text-emerald-700;
   }
 
   .status-badge-candidate {
-    @apply status-badge border-l-amber-500 text-amber-700;
+    @apply status-badge bg-amber-50 text-amber-700;
   }
 
   .status-badge-removed {
-    @apply status-badge border-l-red-500 text-red-600;
+    @apply status-badge bg-red-50 text-red-600;
   }
 }

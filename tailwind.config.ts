@@ -9,16 +9,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        cream: '#FAF9F6',
-        navy: '#0F1F3D',
-        accent: '#2B5EA7',
-        'accent-hover': '#234B8A',
+        cream: '#F8FAFC',
+        navy: '#0F172A',
+        accent: '#3B82F6',
+        'accent-hover': '#2563EB',
         terracotta: '#C4622D',
       },
       fontFamily: {
-        display: ['"DM Serif Display"', 'Georgia', 'serif'],
+        display: ['Inter', 'system-ui', 'sans-serif'],
         body: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+      },
+      boxShadow: {
+        card: '0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04)',
+      },
+      borderRadius: {
+        xl: '0.75rem',
+        '2xl': '1rem',
       },
     },
   },

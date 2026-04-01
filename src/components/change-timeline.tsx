@@ -57,7 +57,7 @@ export default function ChangeTimeline({ changes }: Props) {
 
   if (changes.length === 0) {
     return (
-      <div className="text-center py-12 text-navy/40 border border-dashed border-navy/10 rounded font-body">
+      <div className="text-center py-12 text-slate-400 border border-dashed border-slate-200 rounded-xl font-body">
         {language === 'fr'
           ? 'Aucun changement détecté depuis le lancement du tracker.'
           : 'No changes detected since tracker launch.'}
@@ -71,7 +71,7 @@ export default function ChangeTimeline({ changes }: Props) {
     <div className="space-y-10">
       {Array.from(groups.entries()).map(([date, events]) => (
         <div key={date}>
-          <h2 className="text-xs font-mono font-medium text-navy/40 uppercase tracking-[0.2em] mb-4">
+          <h2 className="text-xs font-body font-semibold text-slate-400 uppercase tracking-wide mb-4">
             {formatDate(date, locale)}
           </h2>
           <div className="space-y-2">
@@ -84,7 +84,7 @@ export default function ChangeTimeline({ changes }: Props) {
               return (
                 <div
                   key={event.id}
-                  className={`flex items-start gap-3 px-4 py-3 border-l-2 ${borderColour} hover:bg-navy/[0.02] transition-colors`}
+                  className={`flex items-start gap-3 px-4 py-3 border-l-2 ${borderColour} bg-white rounded-r-lg hover:bg-slate-50 transition-colors`}
                 >
                   <span className={meta.badgeClass}>
                     {meta.label}
@@ -97,12 +97,12 @@ export default function ChangeTimeline({ changes }: Props) {
                       {event.pdpName}
                     </a>
                     {event.eventType === 'status_changed' && oldVal && newVal && (
-                      <p className="text-xs font-mono text-navy/40 mt-0.5">
+                      <p className="text-xs font-body text-slate-400 mt-0.5">
                         {oldVal.status} → {newVal.status}
                       </p>
                     )}
                   </div>
-                  <time className="text-[10px] font-mono text-navy/30 whitespace-nowrap uppercase tracking-wider">
+                  <time className="text-[10px] font-body font-medium text-slate-300 whitespace-nowrap tracking-wide">
                     {new Date(event.detectedAt).toLocaleTimeString(locale, {
                       hour: '2-digit',
                       minute: '2-digit',

@@ -57,19 +57,19 @@ export default function PdpDetailContent({ pdp, history, linkedPeppolAp }: Props
   const statusLabel = STATUS_LABELS[language]?.[pdp.status] ?? pdp.status;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <div>
-        <Link href="/" className="text-xs font-mono text-accent uppercase tracking-wider hover:underline">
-          {t(language, 'detailBackToRegistry')}
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-body font-medium text-accent hover:text-accent-hover transition-colors">
+          <span>←</span> {t(language, 'detailBackToRegistry')}
         </Link>
       </div>
 
-      <div className="border border-navy/10 p-6">
+      <div className="card p-6 sm:p-8">
         <div className="flex flex-wrap items-start gap-4">
           <div className="flex-1 min-w-0">
-            <h1 className="font-display text-3xl text-navy truncate">{pdp.name}</h1>
+            <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-navy truncate">{pdp.name}</h1>
             {pdp.registrationNumber && (
-              <p className="text-xs font-mono text-navy/40 mt-2">
+              <p className="text-xs font-body text-slate-400 mt-2">
                 {t(language, 'detailRegistrationNumber')} {pdp.registrationNumber}
               </p>
             )}
@@ -79,12 +79,12 @@ export default function PdpDetailContent({ pdp, history, linkedPeppolAp }: Props
           </span>
         </div>
 
-        <div className="hr-rule mt-6" />
+        <div className="border-t border-slate-200 mt-6" />
 
-        <dl className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+        <dl className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           {pdp.registrationDate && (
             <>
-              <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+              <dt className="text-xs font-body font-medium text-slate-400 uppercase tracking-wide">
                 {t(language, 'detailRegistrationDate')}
               </dt>
               <dd className="text-navy font-body">{pdp.registrationDate}</dd>
@@ -92,7 +92,7 @@ export default function PdpDetailContent({ pdp, history, linkedPeppolAp }: Props
           )}
           {pdp.websiteUrl && (
             <>
-              <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+              <dt className="text-xs font-body font-medium text-slate-400 uppercase tracking-wide">
                 {t(language, 'detailWebsite')}
               </dt>
               <dd>
@@ -100,7 +100,7 @@ export default function PdpDetailContent({ pdp, history, linkedPeppolAp }: Props
                   href={pdp.websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-accent hover:underline truncate block font-mono text-xs"
+                  className="text-accent hover:text-accent-hover truncate block text-sm transition-colors"
                 >
                   {pdp.websiteUrl}
                 </a>
@@ -109,13 +109,13 @@ export default function PdpDetailContent({ pdp, history, linkedPeppolAp }: Props
           )}
           {pdp.contactEmail && (
             <>
-              <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+              <dt className="text-xs font-body font-medium text-slate-400 uppercase tracking-wide">
                 {t(language, 'detailContactEmail')}
               </dt>
               <dd>
                 <a
                   href={`mailto:${pdp.contactEmail}`}
-                  className="text-accent hover:underline truncate block font-mono text-xs"
+                  className="text-accent hover:text-accent-hover truncate block text-sm transition-colors"
                 >
                   {pdp.contactEmail}
                 </a>
@@ -124,25 +124,25 @@ export default function PdpDetailContent({ pdp, history, linkedPeppolAp }: Props
           )}
           {pdp.physicalAddress && (
             <>
-              <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+              <dt className="text-xs font-body font-medium text-slate-400 uppercase tracking-wide">
                 {t(language, 'detailAddress')}
               </dt>
               <dd className="text-navy font-body">{pdp.physicalAddress}</dd>
             </>
           )}
-          <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+          <dt className="text-xs font-body font-medium text-slate-400 uppercase tracking-wide">
             {t(language, 'detailFirstTracked')}
           </dt>
           <dd className="text-navy font-body">
             {new Date(pdp.firstSeenAt).toLocaleDateString(locale, { dateStyle: 'long' })}
           </dd>
-          <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+          <dt className="text-xs font-body font-medium text-slate-400 uppercase tracking-wide">
             {t(language, 'detailLastTracked')}
           </dt>
           <dd className="text-navy font-body">
             {new Date(pdp.lastSeenAt).toLocaleDateString(locale, { dateStyle: 'long' })}
           </dd>
-          <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+          <dt className="text-xs font-body font-medium text-slate-400 uppercase tracking-wide">
             {t(language, 'detailSource')}
           </dt>
           <dd>
@@ -150,7 +150,7 @@ export default function PdpDetailContent({ pdp, history, linkedPeppolAp }: Props
               href="https://www.impots.gouv.fr"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-accent hover:underline font-mono text-xs"
+              className="text-accent hover:text-accent-hover text-sm transition-colors"
             >
               impots.gouv.fr
             </a>
@@ -160,45 +160,42 @@ export default function PdpDetailContent({ pdp, history, linkedPeppolAp }: Props
 
       {/* Peppol AP section */}
       {linkedPeppolAp && (
-        <div className="border border-navy/10 p-6">
+        <div className="card p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="font-display text-xl text-navy">
+            <h2 className="font-display font-bold text-xl text-navy">
               {t(language, 'detailPeppolSection')}
             </h2>
-            <span
-              className="inline-flex items-center px-1.5 py-px text-[10px] font-mono font-medium rounded-full leading-tight"
-              style={{ background: '#e6f4f4', color: '#2A7F7F', border: '1px solid #a8d5d5' }}
-            >
+            <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-body font-semibold rounded-md bg-teal-50 text-teal-700">
               {t(language, 'badgeBothRegistries')}
             </span>
           </div>
-          <p className="mt-3 text-sm font-body text-navy/60 max-w-prose">
+          <p className="mt-3 text-sm font-body text-slate-500 max-w-prose">
             {t(language, 'detailPeppolExplainer')}
           </p>
-          <div className="hr-rule mt-4" />
-          <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+          <div className="border-t border-slate-200 mt-4" />
+          <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <dt className="text-xs font-body font-medium text-slate-400 uppercase tracking-wide">
               {t(language, 'peppolApCountry')}
             </dt>
             <dd className="text-navy font-body">{linkedPeppolAp.country ?? '—'}</dd>
-            <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+            <dt className="text-xs font-body font-medium text-slate-400 uppercase tracking-wide">
               {t(language, 'peppolApAuthority')}
             </dt>
             <dd className="text-navy font-body">{linkedPeppolAp.authority ?? '—'}</dd>
-            <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+            <dt className="text-xs font-body font-medium text-slate-400 uppercase tracking-wide">
               {t(language, 'peppolApCertifications')}
             </dt>
             <dd>
               <div className="flex gap-1.5">
                 {linkedPeppolAp.apCertified && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-200">AP</span>
+                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-body font-semibold rounded-md bg-blue-50 text-blue-700">AP</span>
                 )}
                 {linkedPeppolAp.smpCertified && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-purple-50 text-purple-700 border border-purple-200">SMP</span>
+                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-body font-semibold rounded-md bg-purple-50 text-purple-700">SMP</span>
                 )}
               </div>
             </dd>
-            <dt className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">
+            <dt className="text-xs font-body font-medium text-slate-400 uppercase tracking-wide">
               {t(language, 'detailSource')}
             </dt>
             <dd>
@@ -206,7 +203,7 @@ export default function PdpDetailContent({ pdp, history, linkedPeppolAp }: Props
                 href="https://peppol.org/members/peppol-certified-service-providers/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-accent hover:underline font-mono text-xs"
+                className="text-accent hover:text-accent-hover text-sm transition-colors"
               >
                 peppol.org
               </a>
@@ -217,16 +214,16 @@ export default function PdpDetailContent({ pdp, history, linkedPeppolAp }: Props
 
       {/* Change history */}
       <div>
-        <h2 className="font-display text-xl text-navy mb-4">
+        <h2 className="font-display font-bold text-xl text-navy mb-4">
           {t(language, 'detailChangeHistory')}
         </h2>
 
         {history.length === 0 ? (
-          <p className="text-navy/40 text-sm font-body">
+          <p className="text-slate-400 text-sm font-body">
             {t(language, 'detailNoChanges')}
           </p>
         ) : (
-          <ol className="relative border-l border-navy/10 ml-3 space-y-6">
+          <ol className="relative border-l border-slate-200 ml-3 space-y-6">
             {history.map((event) => {
               const et = EVENT_LABELS[language]?.[event.eventType] ?? {
                 label: event.eventType,
@@ -248,14 +245,14 @@ export default function PdpDetailContent({ pdp, history, linkedPeppolAp }: Props
                     <span className={et.classes}>
                       {et.label}
                     </span>
-                    <time className="text-[10px] font-mono text-navy/30 uppercase tracking-wider">
+                    <time className="text-xs font-body text-slate-400">
                       {new Date(event.detectedAt).toLocaleString(locale, {
                         dateStyle: 'medium',
                         timeStyle: 'short',
                       })}
                     </time>
                   </div>
-                  {detail && <p className="mt-1 text-xs font-mono text-navy/40">{detail}</p>}
+                  {detail && <p className="mt-1 text-xs font-body text-slate-500">{detail}</p>}
                 </li>
               );
             })}

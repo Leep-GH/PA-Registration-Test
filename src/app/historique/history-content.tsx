@@ -58,20 +58,20 @@ export default function HistoryContent({ total, changes, eventType, pageNum, tot
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-3xl sm:text-4xl text-navy">
+        <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-navy">
           {t(language, 'historyTitle')}
         </h1>
-        <p className="mt-3 text-navy/60 font-body text-sm leading-relaxed max-w-2xl">
+        <p className="mt-3 text-slate-500 font-body text-sm leading-relaxed max-w-2xl">
           {language === 'en'
             ? 'Complete history of all changes detected in the DGFiP registry of approved platforms since tracker launch.'
             : 'Toutes les modifications détectées dans le registre DGFiP des Plateformes Agréées depuis le démarrage du tracker.'}
         </p>
-        <div className="hr-rule mt-6" />
+        <div className="border-t border-slate-200 mt-6" />
       </div>
 
       {/* Tracking-start notice */}
-      <div className="flex items-start gap-2 px-4 py-3 bg-navy/[0.03] border border-navy/10 rounded text-xs font-body text-navy/55">
-        <span className="mt-0.5 text-navy/30">ℹ</span>
+      <div className="flex items-start gap-2 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-xs font-body text-blue-700">
+        <span className="mt-0.5 text-blue-400">ℹ</span>
         <span>
           {language === 'en'
             ? 'Tracking started 26 March 2026 — changes shown from 27 March onwards.'
@@ -81,7 +81,7 @@ export default function HistoryContent({ total, changes, eventType, pageNum, tot
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-body text-navy/40 uppercase tracking-wide mr-1">{labels.filter}</span>
+        <span className="text-xs font-body font-medium text-slate-400 uppercase tracking-wide mr-1">{labels.filter}</span>
         {filterOptions.map(({ label, value }) => {
           const isActive = eventType === value;
           const href = value ? `?type=${value}` : '?';
@@ -89,10 +89,10 @@ export default function HistoryContent({ total, changes, eventType, pageNum, tot
             <Link
               key={label}
               href={href}
-              className={`px-4 py-3 min-h-[44px] inline-flex items-center text-sm font-body font-medium uppercase tracking-wide transition-colors ${
+              className={`px-3.5 py-1.5 inline-flex items-center text-xs font-body font-semibold rounded-lg transition-all ${
                 isActive
-                  ? 'text-accent border-b-2 border-accent'
-                  : 'text-navy/55 hover:text-navy'
+                  ? 'bg-accent text-white shadow-sm'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-navy'
               }`}
             >
               {label}
@@ -104,13 +104,13 @@ export default function HistoryContent({ total, changes, eventType, pageNum, tot
         <a
           href="/api/v1/pdps?format=csv"
           download="pdps.csv"
-          className="ml-auto px-3 py-1 text-xs font-mono text-accent uppercase tracking-wider hover:underline"
+          className="ml-auto px-3 py-1 text-xs font-body font-medium text-accent hover:text-accent-hover transition-colors"
         >
           {labels.download}
         </a>
       </div>
 
-      <p className="text-xs font-mono text-navy/40 uppercase tracking-wider">
+      <p className="text-xs font-body font-medium text-slate-400">
         {labels.total(total)}
       </p>
 
@@ -122,18 +122,18 @@ export default function HistoryContent({ total, changes, eventType, pageNum, tot
           {pageNum > 1 && (
             <Link
               href={`?${eventType ? `type=${eventType}&` : ''}page=${pageNum - 1}`}
-              className="px-4 py-2 text-xs font-mono uppercase tracking-wider text-navy/50 border border-navy/10 hover:bg-navy/[0.02] transition-colors"
+              className="px-4 py-2 text-sm font-body font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all"
             >
               {labels.previous}
             </Link>
           )}
-          <span className="px-4 py-2 text-xs font-mono text-navy/40">
+          <span className="px-4 py-2 text-xs font-body font-medium text-slate-400">
             Page {pageNum} / {totalPages}
           </span>
           {pageNum < totalPages && (
             <Link
               href={`?${eventType ? `type=${eventType}&` : ''}page=${pageNum + 1}`}
-              className="px-4 py-2 text-xs font-mono uppercase tracking-wider text-navy/50 border border-navy/10 hover:bg-navy/[0.02] transition-colors"
+              className="px-4 py-2 text-sm font-body font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all"
             >
               {labels.next}
             </Link>

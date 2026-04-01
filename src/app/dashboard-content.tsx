@@ -28,44 +28,47 @@ export default function DashboardContent({
   const { language } = useLanguage();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl sm:text-4xl text-navy">
-          {t(language, 'pageTitle')}
-        </h1>
-        <p className="mt-3 text-navy/60 font-body text-sm leading-relaxed max-w-2xl">
-          {t(language, 'pageDescription')}
-        </p>
-        <p className="mt-1 font-body text-xs text-navy/45">
-          {t(language, 'sourcesLabel')}{' '}
-          <a
-            href="https://www.impots.gouv.fr"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-accent hover:underline"
-          >
-            {t(language, 'sourceLink')}
-          </a>
-          {' · '}
-          <a
-            href="https://peppol.org"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-accent hover:underline"
-          >
-            {t(language, 'peppolSourceLink')}
-          </a>
-        </p>
-        {lastRun && (
-          <p className="mt-2 text-xs font-mono text-navy/40 uppercase tracking-wider">
-            {t(language, 'lastUpdated')}{' '}
-            {new Date(lastRun.runAt).toLocaleString(language === 'fr' ? 'fr-FR' : 'en-US', {
-              dateStyle: 'long',
-              timeStyle: 'short',
-            })}
+    <div className="space-y-8">
+      {/* Hero */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-accent via-blue-600 to-blue-800 p-8 sm:p-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]" />
+        <div className="relative z-10">
+          <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-white tracking-tight">
+            {t(language, 'pageTitle')}
+          </h1>
+          <p className="mt-3 text-blue-100 font-body text-sm leading-relaxed max-w-xl">
+            {t(language, 'pageDescription')}
           </p>
-        )}
-        <div className="hr-rule mt-6" />
+          <div className="mt-4 flex items-center gap-4 text-xs font-body text-blue-200">
+            <span>{t(language, 'sourcesLabel')}</span>
+            <a
+              href="https://www.impots.gouv.fr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/80 hover:text-white underline underline-offset-2 transition-colors"
+            >
+              {t(language, 'sourceLink')}
+            </a>
+            <span className="text-blue-300">·</span>
+            <a
+              href="https://peppol.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/80 hover:text-white underline underline-offset-2 transition-colors"
+            >
+              {t(language, 'peppolSourceLink')}
+            </a>
+          </div>
+          {lastRun && (
+            <p className="mt-3 text-[11px] font-mono text-blue-200/70 uppercase tracking-wider">
+              {t(language, 'lastUpdated')}{' '}
+              {new Date(lastRun.runAt).toLocaleString(language === 'fr' ? 'fr-FR' : 'en-US', {
+                dateStyle: 'long',
+                timeStyle: 'short',
+              })}
+            </p>
+          )}
+        </div>
       </div>
 
       <StatsBar
