@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 import { NextRequest, NextResponse } from 'next/server';
 import { timingSafeEqual } from 'crypto';
 import { revalidatePath } from 'next/cache';
@@ -36,20 +37,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Fire and forget — start scrape in background, return 202 immediately
-  runScrape()
-    .then(() => {
-      revalidatePath('/');
-      revalidatePath('/historique');
-    })
-    .catch((error: unknown) => {
-      logger.error('Background scrape failed', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+  // Await scrape so revalidatePath runs before the function terminates
+  try {
+    const outcome = await runScrape();
+    revalidatePath('/');
+    revalidatePath('/historique');
+    return NextResponse.json(
+      { message: 'Scrape completed', runId: outcome.runId, changes: outcome.changes },
+      { status: 200 },
+    );
+  } catch (error: unknown) {
+    logger.error('Scrape failed', {
+      error: error instanceof Error ? error.message : String(error),
     });
-
-  return NextResponse.json(
-    { message: 'Scrape accepted', status: 'started' },
-    { status: 202 },
-  );
+    return NextResponse.json(
+      { error: 'Scrape failed' },
+      { status: 500 },
+    );
+  }
 }
