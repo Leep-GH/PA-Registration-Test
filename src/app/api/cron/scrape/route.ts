@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300; // Allow up to 5 minutes for the full scrape cycle
 import { NextRequest, NextResponse } from 'next/server';
 import { timingSafeEqual } from 'crypto';
 import { revalidatePath } from 'next/cache';
@@ -37,18 +38,16 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ message: 'Already running' }, { status: 409 });
   }
 
-  runScrape()
-    .then(() => {
-      revalidatePath('/');
-      revalidatePath('/historique');
-      logger.info('Cron scrape completed successfully');
-    })
-    .catch((error: unknown) => {
-      logger.error('Cron scrape failed', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+  try {
+    const outcome = await runScrape();
+    revalidatePath('/');
+    revalidatePath('/historique');
+    logger.info('Cron scrape completed successfully', { runId: outcome.runId, changes: outcome.changes });
+    return NextResponse.json({ message: 'Scrape completed', runId: outcome.runId, changes: outcome.changes }, { status: 200 });
+  } catch (error: unknown) {
+    logger.error('Cron scrape failed', {
+      error: error instanceof Error ? error.message : String(error),
     });
-
-  logger.info('Cron scrape accepted');
-  return NextResponse.json({ message: 'Scrape started' }, { status: 202 });
+    return NextResponse.json({ error: 'Scrape failed' }, { status: 500 });
+  }
 }
